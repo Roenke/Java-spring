@@ -17,7 +17,9 @@ public class Main {
             System.exit(1);
         }
 
-        Expression basicExpression = Parser.Parse(expression);
+        Parser parser = new Parser(expression);
+
+        Expression basicExpression = parser.getExpression();
         Expression derivative = basicExpression.derivative(variable);
         System.out.println(derivative.toString());
     }
