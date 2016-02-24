@@ -65,6 +65,7 @@ public class TrieImpl implements Trie {
 
         if (i == element.length()) {
             current.isEndOfSomeElement = false;
+            current.endsCountInSubtree--;
         }
         else {
             current.children.remove(element.charAt(i));

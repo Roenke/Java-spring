@@ -19,6 +19,7 @@ public class TrieImplTest {
 
         Assert.assertTrue(trie.add("ca"));
         Assert.assertTrue(trie.add("c"));
+        Assert.assertTrue(trie.add(""));
     }
 
     @org.junit.Test
@@ -52,6 +53,11 @@ public class TrieImplTest {
         trie.add("VeryVeryLongWord1");
         trie.remove("VeryVeryLongWord");
         Assert.assertTrue(trie.contains("VeryVeryLongWord1"));
+
+        Assert.assertFalse(trie.contains(""));
+
+        trie.add("");
+        Assert.assertTrue(trie.contains(""));
     }
 
     @org.junit.Test
@@ -66,6 +72,11 @@ public class TrieImplTest {
         trie.add("word");
 
         Assert.assertTrue(trie.remove("word"));
+
+        Assert.assertFalse(trie.remove(""));
+
+        trie.add("");
+        Assert.assertTrue(trie.remove(""));
     }
 
     @org.junit.Test
@@ -96,6 +107,15 @@ public class TrieImplTest {
 
         trie.remove("Word");
         Assert.assertEquals(trie.size(), 0);
+
+        trie.add("");
+        Assert.assertEquals(trie.size(), 1);
+
+        trie.add("");
+        Assert.assertEquals(trie.size(), 1);
+
+        trie.remove("");
+        Assert.assertEquals(trie.size(), 0);
     }
 
     @org.junit.Test
@@ -114,5 +134,6 @@ public class TrieImplTest {
         Assert.assertEquals(trie.howManyStartsWithPrefix("VeryVeryV"), 0);
         Assert.assertEquals(trie.howManyStartsWithPrefix("VeryVeryL"), 2);
         Assert.assertEquals(trie.howManyStartsWithPrefix("VeryVeryLongWord"), 1);
+        Assert.assertEquals(trie.howManyStartsWithPrefix(""), 4);
     }
 }
