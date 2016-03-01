@@ -4,10 +4,10 @@ import java.util.HashMap;
 
 public class TrieImpl implements Trie {
 
-    private class Node {
-        boolean isEndOfSomeElement = false;
-        int endsCountInSubtree = 0;
-        HashMap<Character, Node> children = new HashMap<>();
+    private static class Node {
+        private boolean isEndOfSomeElement = false;
+        private int endsCountInSubtree = 0;
+        private final HashMap<Character, Node> children = new HashMap<>();
     }
 
     private Node root;
@@ -32,8 +32,9 @@ public class TrieImpl implements Trie {
 
         while (i < element.length()) {
             current.endsCountInSubtree++;
-            current.children.put(element.charAt(i), new Node());
-            current = current.children.get(element.charAt(i));
+            Node node = new Node();
+            current.children.put(element.charAt(i), node);
+            current = node;
             i++;
         }
 
