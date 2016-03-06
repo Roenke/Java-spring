@@ -1,8 +1,8 @@
-package ru.spbau.bibaev.ha1.test;
+package ru.spbau.bibaev.homeassignment.test;
 
 import org.junit.Assert;
-import ru.spbau.bibaev.ha1.Trie;
-import ru.spbau.bibaev.ha1.TrieImpl;
+import ru.spbau.bibaev.homeassignment.Trie;
+import ru.spbau.bibaev.homeassignment.TrieImpl;
 
 public class TrieImplTest {
 

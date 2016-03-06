@@ -1,4 +1,4 @@
-package ru.spbau.bibaev.ha1;
+package ru.spbau.bibaev.homeassignment;
 
 public interface Trie {
 

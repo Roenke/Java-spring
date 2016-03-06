@@ -1,8 +1,21 @@
-package ru.spbau.bibaev.ha1;
+package ru.spbau.bibaev.homeassignment;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 
-public class TrieImpl implements Trie {
+public class TrieImpl implements Trie, StreamSerializable {
+
+    @Override
+    public void serialize(OutputStream out) throws IOException {
+
+    }
+
+    @Override
+    public void deserialize(InputStream in) throws IOException {
+
+    }
 
     private static class Node {
         private boolean isEndOfSomeElement = false;
