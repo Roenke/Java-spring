@@ -5,7 +5,35 @@ import static org.junit.Assert.*;
 import ru.spbau.bibaev.homeassignment.Trie;
 import ru.spbau.bibaev.homeassignment.TrieImpl;
 
+import java.io.*;
+
 public class TrieImplTest {
+
+    @org.junit.Test
+    public void testSerialization() throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TrieImpl trie = new TrieImpl();
+        trie.add("abc");
+        trie.add("a");
+        trie.add("ab");
+        trie.add("abcdef");
+        trie.add("abdc");
+        trie.add("ae");
+        trie.serialize(outputStream);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        TrieImpl readerTrie = new TrieImpl();
+        readerTrie.deserialize(inputStream);
+        assertEquals(trie.size(), readerTrie.size());
+        assertFalse(readerTrie.contains(""));
+        assertFalse(readerTrie.contains("abcde"));
+        assertTrue(readerTrie.contains("a"));
+        assertTrue(readerTrie.contains("ae"));
+        assertTrue(readerTrie.contains("ab"));
+        assertTrue(readerTrie.contains("abc"));
+        assertTrue(readerTrie.contains("abcdef"));
+        assertTrue(readerTrie.contains("abdc"));
+    }
 
     @org.junit.Test
     public void testAdd() throws Exception {
