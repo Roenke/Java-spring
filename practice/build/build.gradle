@@ -1,17 +1,12 @@
 group 'ru.spbau.bibaev.build-sample'
 version '1.0'
 
-apply plugin: 'java', 'application'
+apply plugin: 'java'
 
 repositories {
     mavenCentral()
 }
 
-jar {
-    manifest{
-        attributes 'Main-class': 'ru.spbau.bibaev.build-sample.Main'
-    }
-}
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
