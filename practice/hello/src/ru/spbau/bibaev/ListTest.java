@@ -1,6 +1,6 @@
 package ru.spbau.bibaev;
 
-import org.junit.Assert;
+import java.util.AbstractList;
 
 import static org.junit.Assert.*;
 
@@ -10,17 +10,15 @@ public class ListTest {
     public void testGet() throws Exception {
         List<Integer> list = new List<>();
         list.add(1);
-        assert list.get(0) == 1;
-        assert list.size() == 1;
+        assertEquals((Integer) 1, list.get(0));
         list.add(2);
-        assert list.get(0) == 1;
-        assert list.get(1) == 2;
-        assert list.size() == 2;
+        assertEquals(new Integer(2), list.get(1));
+        assertEquals(2, list.size());
     }
 
     @org.junit.Test
     public void testRemove() throws Exception {
-        List<Integer> list = new List<>();
+        AbstractList<Integer> list= new List<>();
         list.add(1);
         list.add(2);
         list.add(3);
@@ -29,11 +27,10 @@ public class ListTest {
         list.add(4);
         list.add(4);
         list.add(4);
-        assert !list.remove((Integer) 0);
-        if (!list.remove((Integer) 1)) throw new AssertionError();
-        assert list.size() == 7;
-        list.remove((Integer)4);
-        assert list.size() == 3;
+        assertFalse(list.remove(new Integer(0)));
+        assertEquals(8, list.size());
+        assertTrue(list.remove(new Integer(4)));
+        assertEquals(3, list.size());
     }
 
     @org.junit.Test

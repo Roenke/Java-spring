@@ -42,6 +42,7 @@ public class List<T> extends AbstractList {
         int i = 0;
         while (ptr != null && i != index){
             ptr = ptr.next;
+            i++;
         }
 
         if(ptr == null) {
@@ -72,10 +73,11 @@ public class List<T> extends AbstractList {
         node<T> ptrNext = head.next;
 
         while (ptrNext != null){
-            if (ptrNext.value == (T)o){
+            if (ptrNext.value.equals(o)){
                 found = true;
                 ptr.next = ptrNext.next;
                 ptrNext = ptrNext.next;
+                size--;
             }
             else{
                 ptr = ptrNext;
