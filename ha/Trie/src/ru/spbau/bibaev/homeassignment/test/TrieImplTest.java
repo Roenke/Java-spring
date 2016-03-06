@@ -1,6 +1,7 @@
 package ru.spbau.bibaev.homeassignment.test;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import ru.spbau.bibaev.homeassignment.Trie;
 import ru.spbau.bibaev.homeassignment.TrieImpl;
 
@@ -12,14 +13,15 @@ public class TrieImplTest {
         String str2 = "dog";
 
         Trie trie = new TrieImpl();
-        Assert.assertTrue(trie.add(str1));
-        Assert.assertTrue(trie.add(str2));
-        Assert.assertFalse(trie.add(str1));
-        Assert.assertFalse(trie.add(str2));
+        assertTrue(trie.add(str1));
+        assertEquals(1, trie.size());
+        assertTrue(trie.add(str2));
+        assertFalse(trie.add(str1));
+        assertFalse(trie.add(str2));
 
-        Assert.assertTrue(trie.add("ca"));
-        Assert.assertTrue(trie.add("c"));
-        Assert.assertTrue(trie.add(""));
+        assertTrue(trie.add("ca"));
+        assertTrue(trie.add("c"));
+        assertTrue(trie.add(""));
     }
 
     @org.junit.Test
@@ -30,34 +32,21 @@ public class TrieImplTest {
         trie.add("VeryVeryLong");
         trie.add("VeryVeryLongWord");
 
-        Assert.assertTrue(trie.contains("Very"));
-        Assert.assertTrue(trie.contains("VeryVery"));
-        Assert.assertTrue(trie.contains("VeryVeryLong"));
-        Assert.assertTrue(trie.contains("VeryVeryLongWord"));
+        assertTrue(trie.contains("Very"));
+        assertTrue(trie.contains("VeryVery"));
+        assertTrue(trie.contains("VeryVeryLong"));
+        assertTrue(trie.contains("VeryVeryLongWord"));
 
-        Assert.assertFalse(trie.contains("AnyWord"));
-        Assert.assertFalse(trie.contains("Word"));
-        Assert.assertFalse(trie.contains("Ve"));
-        Assert.assertFalse(trie.contains("VeryV"));
-        Assert.assertFalse(trie.contains("VeryVeryLongWord1"));
-        Assert.assertFalse(trie.contains("VeryVeryLongWor"));
+        assertFalse(trie.contains("AnyWord"));
+        assertFalse(trie.contains("Word"));
+        assertFalse(trie.contains("Ve"));
+        assertFalse(trie.contains("VeryV"));
+        assertFalse(trie.contains("VeryVeryLongWord1"));
+        assertFalse(trie.contains("VeryVeryLongWor"));
 
-        trie.remove("Very");
-        Assert.assertFalse(trie.contains("Very"));
-        Assert.assertTrue(trie.contains("VeryVery"));
-
-        trie.remove("VeryVery");
-        Assert.assertFalse(trie.contains("VeryVery"));
-        Assert.assertTrue(trie.contains("VeryVeryLong"));
-
-        trie.add("VeryVeryLongWord1");
-        trie.remove("VeryVeryLongWord");
-        Assert.assertTrue(trie.contains("VeryVeryLongWord1"));
-
-        Assert.assertFalse(trie.contains(""));
-
+        assertFalse(trie.contains(""));
         trie.add("");
-        Assert.assertTrue(trie.contains(""));
+        assertTrue(trie.contains(""));
     }
 
     @org.junit.Test
@@ -65,57 +54,92 @@ public class TrieImplTest {
         Trie trie = new TrieImpl();
         trie.add("String");
         trie.add("Word");
-        Assert.assertFalse(trie.remove("YetWord"));
-        Assert.assertTrue(trie.remove("Word"));
+        assertEquals(2, trie.size());
+        assertFalse(trie.remove("YetWord"));
+        assertEquals(2, trie.size());
+        assertTrue(trie.remove("Word"));
+        assertEquals(1, trie.size());
+        assertFalse(trie.contains("Word"));
 
         trie.add("Word");
         trie.add("word");
 
-        Assert.assertTrue(trie.remove("word"));
+        assertTrue(trie.remove("word"));
+        assertEquals(2, trie.size());
+        assertFalse(trie.contains("word"));
 
-        Assert.assertFalse(trie.remove(""));
+        assertFalse(trie.contains(""));
+        assertFalse(trie.remove(""));
+        assertEquals(2, trie.size());
+
 
         trie.add("");
-        Assert.assertTrue(trie.remove(""));
+        assertEquals(3, trie.size());
+        assertTrue(trie.remove(""));
+        assertEquals(2, trie.size());
+        assertFalse(trie.contains(""));
+
+        trie.remove("Word");
+        trie.remove("String");
+        assertEquals(0, trie.size());
+
+        trie.add("Very");
+        trie.add("VeryVery");
+        trie.add("VeryVeryLong");
+        trie.add("VeryVeryLongWord");
+
+        assertEquals(4, trie.size());
+        trie.remove("Very");
+        assertEquals(3, trie.size());
+        assertFalse(trie.contains("Very"));
+        assertTrue(trie.contains("VeryVery"));
+
+        trie.remove("VeryVery");
+        assertEquals(2, trie.size());
+        assertFalse(trie.contains("VeryVery"));
+        assertTrue(trie.contains("VeryVeryLong"));
+
+        trie.add("VeryVeryLongWord1");
+        assertEquals(3, trie.size());
+        trie.remove("VeryVeryLongWord");
+        assertEquals(2, trie.size());
+        assertTrue(trie.contains("VeryVeryLongWord1"));
     }
 
     @org.junit.Test
     public void testSize() throws Exception {
         Trie trie = new TrieImpl();
-        Assert.assertEquals(trie.size(), 0);
+        assertEquals(0, trie.size());
         trie.add("String");
-        Assert.assertEquals(trie.size(), 1);
+        assertEquals(1, trie.size());
         trie.add("String2");
-        Assert.assertEquals(trie.size(), 2);
+        assertEquals(2, trie.size());
         trie.add("Word");
-        Assert.assertEquals(trie.size(), 3);
+        assertEquals(3, trie.size());
 
         trie.remove("str");
-        Assert.assertEquals(trie.size(), 3);
+        assertEquals(3, trie.size());
 
         trie.remove("String");
-        Assert.assertEquals(trie.size(), 2);
+        assertEquals(2, trie.size());
 
         trie.remove("String2");
-        Assert.assertEquals(trie.size(), 1);
+        assertEquals(1, trie.size());
 
         trie.remove("Word");
-        Assert.assertEquals(trie.size(), 0);
+        assertEquals(0, trie.size());
 
         trie.remove("Word");
-        Assert.assertEquals(trie.size(), 0);
-
-        trie.remove("Word");
-        Assert.assertEquals(trie.size(), 0);
+        assertEquals(0, trie.size());
 
         trie.add("");
-        Assert.assertEquals(trie.size(), 1);
+        assertEquals(1, trie.size());
 
         trie.add("");
-        Assert.assertEquals(trie.size(), 1);
+        assertEquals(1, trie.size());
 
         trie.remove("");
-        Assert.assertEquals(trie.size(), 0);
+        assertEquals(0, trie.size());
     }
 
     @org.junit.Test
@@ -126,14 +150,14 @@ public class TrieImplTest {
         trie.add("VeryVeryLong");
         trie.add("VeryVeryLongWord");
 
-        Assert.assertEquals(trie.howManyStartsWithPrefix("V"), 4);
-        Assert.assertEquals(trie.howManyStartsWithPrefix("Very"), 4);
-        Assert.assertEquals(trie.howManyStartsWithPrefix("VE"), 0);
-        Assert.assertEquals(trie.howManyStartsWithPrefix("VeryV"), 3);
-        Assert.assertEquals(trie.howManyStartsWithPrefix("VeryVery"), 3);
-        Assert.assertEquals(trie.howManyStartsWithPrefix("VeryVeryV"), 0);
-        Assert.assertEquals(trie.howManyStartsWithPrefix("VeryVeryL"), 2);
-        Assert.assertEquals(trie.howManyStartsWithPrefix("VeryVeryLongWord"), 1);
-        Assert.assertEquals(trie.howManyStartsWithPrefix(""), 4);
+        assertEquals(4, trie.howManyStartsWithPrefix("V"));
+        assertEquals(4, trie.howManyStartsWithPrefix("Very"));
+        assertEquals(0, trie.howManyStartsWithPrefix("VE"));
+        assertEquals(3, trie.howManyStartsWithPrefix("VeryV"));
+        assertEquals(3, trie.howManyStartsWithPrefix("VeryVery"));
+        assertEquals(0, trie.howManyStartsWithPrefix("VeryVeryV"));
+        assertEquals(2, trie.howManyStartsWithPrefix("VeryVeryL"));
+        assertEquals(1, trie.howManyStartsWithPrefix("VeryVeryLongWord"));
+        assertEquals(4, trie.howManyStartsWithPrefix(""));
     }
 }
