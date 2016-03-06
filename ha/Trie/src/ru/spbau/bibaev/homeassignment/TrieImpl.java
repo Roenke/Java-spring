@@ -1,32 +1,61 @@
 package ru.spbau.bibaev.homeassignment;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 
 public class TrieImpl implements Trie, StreamSerializable {
 
-    @Override
-    public void serialize(OutputStream out) throws IOException {
-
-    }
-
-    @Override
-    public void deserialize(InputStream in) throws IOException {
-
-    }
-
-    private static class Node {
+    private static class Node implements StreamSerializable {
         private boolean isEndOfSomeElement = false;
         private int endsCountInSubtree = 0;
         private final HashMap<Character, Node> children = new HashMap<>();
+
+        @Override
+        public void serialize(OutputStream out) throws IOException {
+            DataOutputStream dataOutputStream = new DataOutputStream(out);
+            dataOutputStream.writeBoolean(isEndOfSomeElement);
+            dataOutputStream.writeInt(endsCountInSubtree);
+
+            dataOutputStream.writeInt(children.size());
+            for(Map.Entry<Character, Node> mapEntry : children.entrySet()) {
+                dataOutputStream.writeChar(mapEntry.getKey());
+                mapEntry.getValue().serialize(out);
+            }
+        }
+
+        @Override
+        public void deserialize(InputStream in) throws IOException {
+            DataInputStream dataInputStream = new DataInputStream(in);
+            isEndOfSomeElement = dataInputStream.readBoolean();
+            endsCountInSubtree = dataInputStream.readInt();
+            children.clear();
+            int childrenCount = dataInputStream.readInt();
+            for (int i = 0; i < childrenCount; i++) {
+                char ch = dataInputStream.readChar();
+                Node node = new Node();
+                node.deserialize(in);
+                children.put(ch, node);
+            }
+        }
     }
 
     private Node root;
 
     public TrieImpl() {
         root = new Node();
+    }
+
+    @Override
+    public void serialize(OutputStream out) throws IOException {
+        root.serialize(out);
+    }
+
+    @Override
+    public void deserialize(InputStream in) throws IOException {
+        Node node = new Node();
+        node.deserialize(in);
+        root = node;
     }
 
     @Override
