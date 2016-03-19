@@ -1,9 +1,15 @@
 package ru.spbau.bibaev.homeassignment.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
+import org.junit.Test;
+import ru.spbau.bibaev.homeassignment.StreamSerializable;
 import ru.spbau.bibaev.homeassignment.Trie;
 import ru.spbau.bibaev.homeassignment.TrieImpl;
+
+import java.io.*;
 
 public class TrieImplTest {
 
@@ -159,5 +165,87 @@ public class TrieImplTest {
         assertEquals(2, trie.howManyStartsWithPrefix("VeryVeryL"));
         assertEquals(1, trie.howManyStartsWithPrefix("VeryVeryLongWord"));
         assertEquals(4, trie.howManyStartsWithPrefix(""));
+    }
+
+    @org.junit.Test
+    public void testSerialization() throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TrieImpl trie = new TrieImpl();
+        trie.add("abc");
+        trie.add("a");
+        trie.add("ab");
+        trie.add("abcdef");
+        trie.add("abdc");
+        trie.add("ae");
+        trie.serialize(outputStream);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        TrieImpl readerTrie = new TrieImpl();
+        readerTrie.deserialize(inputStream);
+        assertEquals(trie.size(), readerTrie.size());
+        assertFalse(readerTrie.contains(""));
+        assertFalse(readerTrie.contains("abcde"));
+        assertTrue(readerTrie.contains("a"));
+        assertTrue(readerTrie.contains("ae"));
+        assertTrue(readerTrie.contains("ab"));
+        assertTrue(readerTrie.contains("abc"));
+        assertTrue(readerTrie.contains("abcdef"));
+        assertTrue(readerTrie.contains("abdc"));
+    }
+
+    @Test
+    public void testSimple() {
+        Trie trie = instance();
+
+        assertTrue(trie.add("abc"));
+        assertTrue(trie.contains("abc"));
+        assertEquals(1, trie.size());
+        assertEquals(1, trie.howManyStartsWithPrefix("abc"));
+    }
+
+    @Test
+    public void testSimpleSerialization() throws IOException {
+        Trie trie = instance();
+
+        assertTrue(trie.add("abc"));
+        assertTrue(trie.add("cde"));
+        assertEquals(2, trie.size());
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ((StreamSerializable) trie).serialize(outputStream);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        Trie newTrie = instance();
+        ((StreamSerializable) newTrie).deserialize(inputStream);
+
+        assertTrue(newTrie.contains("abc"));
+        assertTrue(newTrie.contains("cde"));
+        assertEquals(2, trie.size());
+    }
+
+
+    @Test(expected=IOException.class)
+    public void testSimpleSerializationFails() throws IOException {
+        Trie trie = instance();
+
+        assertTrue(trie.add("abc"));
+        assertTrue(trie.add("cde"));
+
+        OutputStream outputStream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                throw new IOException("Fail");
+            }
+        };
+
+        ((StreamSerializable) trie).serialize(outputStream);
+    }
+
+    public static Trie instance() {
+        try {
+            return (Trie) Class.forName("ru.spbau.bibaev.homeassignment.TrieImpl").newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
