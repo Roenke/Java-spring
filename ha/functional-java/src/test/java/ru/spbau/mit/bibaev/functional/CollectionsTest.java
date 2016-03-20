@@ -1,7 +1,9 @@
-package ru.spbau.mit.bibaev.functional.func;
+package ru.spbau.mit.bibaev.functional;
 
 import org.junit.Test;
-import ru.spbau.mit.bibaev.functional.Collections;
+import ru.spbau.mit.bibaev.functional.func.Function1;
+import ru.spbau.mit.bibaev.functional.func.Function2;
+import ru.spbau.mit.bibaev.functional.func.Predicate;
 
 import java.util.ArrayList;
 import java.util.Arrays;

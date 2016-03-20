@@ -37,10 +37,10 @@ public class Function2Test {
     }
 
     @Test
-    public void carry() throws Exception {
+    public void curry() throws Exception {
         Function2<Long, Long, Long> div = (a, b) -> a / b;
 
-        assertEquals(5, div.carry().apply(10L).apply(2L).intValue());
-        assertEquals(10, div.carry().apply(10L).apply(1L).intValue());
+        assertEquals(5, div.curry().apply(10L).apply(2L).intValue());
+        assertEquals(10, div.curry().apply(10L).apply(1L).intValue());
     }
 }

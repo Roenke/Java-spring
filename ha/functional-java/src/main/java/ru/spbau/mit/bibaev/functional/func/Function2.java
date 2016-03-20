@@ -15,7 +15,7 @@ public interface Function2<ARG1, ARG2, RES> {
         return arg1 -> apply(arg1, arg2);
     }
 
-    default Function1<ARG1, Function1<ARG2, RES>> carry() {
+    default Function1<ARG1, Function1<ARG2, RES>> curry() {
         return arg1 -> arg2 -> apply(arg1, arg2);
     }
 }
