@@ -71,6 +71,4 @@ public class Collections {
         T next = iterator.next();
         return function.apply(next, foldrInternal(function, ini, iterator));
     }
-
-
 }

@@ -1,7 +1,6 @@
 package ru.spbau.mit.bibaev.FunctionalJava;
 
 import org.junit.Test;
-import ru.spbau.mit.bibaev.FunctionalJava.Function1;
 
 import static org.junit.Assert.*;
 
