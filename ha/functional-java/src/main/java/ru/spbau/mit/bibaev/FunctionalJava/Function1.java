@@ -1,3 +1,5 @@
+package ru.spbau.mit.bibaev.FunctionalJava;
+
 public interface Function1<ARG, RES> {
     RES apply(ARG arg);
 

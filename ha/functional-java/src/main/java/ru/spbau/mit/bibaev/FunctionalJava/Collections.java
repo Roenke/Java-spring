@@ -1,3 +1,5 @@
+package ru.spbau.mit.bibaev.FunctionalJava;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 

@@ -1,3 +1,5 @@
+package ru.spbau.mit.bibaev.FunctionalJava;
+
 public interface Predicate<ARG> extends Function1<ARG, Boolean> {
     default Predicate<ARG> or(Predicate<ARG> other) {
         return arg -> apply(arg) || other.apply(arg);

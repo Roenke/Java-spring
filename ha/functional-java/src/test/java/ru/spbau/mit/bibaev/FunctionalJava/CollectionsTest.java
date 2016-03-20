@@ -1,4 +1,8 @@
+package ru.spbau.mit.bibaev.FunctionalJava;
+
 import org.junit.Test;
+import ru.spbau.mit.bibaev.FunctionalJava.Collections;
+import ru.spbau.mit.bibaev.FunctionalJava.Function1;
 
 import java.util.ArrayList;
 import java.util.Arrays;
