@@ -1,4 +1,4 @@
-package ru.spbau.mit.bibaev.FunctionalJava;
+package ru.spbau.mit.bibaev.functional.func;
 
 import org.junit.Test;
 
@@ -8,8 +8,8 @@ public class PredicateTest {
 
     @Test
     public void or() throws Exception {
-        Predicate<Integer> truePredicate = x -> true;
-        Predicate<Integer> falsePredicate = x -> false;
+        Predicate<Object> truePredicate = Predicate.ALWAYS_TRUE;
+        Predicate<Object> falsePredicate = Predicate.ALWAYS_FALSE;
 
         assertTrue(truePredicate.or(falsePredicate).apply(10));
         assertTrue(falsePredicate.or(truePredicate).apply(10));
@@ -19,8 +19,8 @@ public class PredicateTest {
 
     @Test
     public void and() throws Exception {
-        Predicate<Integer> truePredicate = x -> true;
-        Predicate<Integer> falsePredicate = x -> false;
+        Predicate<Object> truePredicate = Predicate.ALWAYS_TRUE;
+        Predicate<Object> falsePredicate = Predicate.ALWAYS_FALSE;
 
         assertFalse(truePredicate.and(falsePredicate).apply(10));
         assertFalse(falsePredicate.and(truePredicate).apply(10));

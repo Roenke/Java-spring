@@ -1,4 +1,4 @@
-package ru.spbau.mit.bibaev.FunctionalJava;
+package ru.spbau.mit.bibaev.functional.func;
 
 import org.junit.Test;
 
