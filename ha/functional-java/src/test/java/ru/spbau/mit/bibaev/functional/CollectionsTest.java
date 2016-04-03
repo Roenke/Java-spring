@@ -15,7 +15,7 @@ public class CollectionsTest {
 
     @Test
     public void map() throws Exception {
-        ArrayList<Integer> intList = new ArrayList<>(Arrays.asList(new Integer[] { 1, 2, 3 }));
+        ArrayList<Integer> intList = new ArrayList<>(Arrays.asList(1, 2, 3));
 
         Function1<Integer, Integer> square = value -> value * value;
 
@@ -27,37 +27,37 @@ public class CollectionsTest {
 
     @Test
     public void filter() throws Exception {
-        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(new Integer[] { 1, 2, 3, 4, 5, 6 }));
+        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6));
         Predicate<Integer> even = x -> x % 2 == 0;
 
         Collection<Integer> result = Collections.filter(even, numberList);
-        Integer[] expected = new Integer[] { 2, 4, 6 };
+        Integer[] expected = new Integer[]{2, 4, 6};
         assertArrayEquals(expected, result.toArray());
     }
 
     @Test
     public void takeWhile() throws Exception {
-        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(new Integer[] {1, 2, 3, 4, 5}));
+        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
         Predicate<Integer> lessThenFive = x -> x < 5;
 
         Collection<Integer> result = Collections.takeWhile(lessThenFive, numberList);
-        Integer[] expected = new Integer[] {1, 2, 3, 4};
+        Integer[] expected = new Integer[]{1, 2, 3, 4};
         assertArrayEquals(expected, result.toArray());
     }
 
     @Test
     public void takeUnless() throws Exception {
-        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(new Integer[] {1, 2, 3, 4, 5}));
+        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
         Predicate<Integer> positive = x -> x > 0;
 
         Collection<Integer> result = Collections.takeUnless(positive, numberList);
-        Integer[] expected = new Integer[] {};
+        Integer[] expected = new Integer[]{};
         assertArrayEquals(expected, result.toArray());
     }
 
     @Test
     public void foldl() throws Exception {
-        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(new Integer[] {1, 2, 3, 5}));
+        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 5));
         Function2<Double, Integer, Double> sum = (l, r) -> l - r;
 
         assertEquals(-11, Collections.foldl(sum, 0.0, numberList).intValue());
@@ -65,7 +65,7 @@ public class CollectionsTest {
 
     @Test
     public void foldr() throws Exception {
-        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(new Integer[] {1, 2, 3, 5}));
+        ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 5));
         Function2<Integer, Double, Double> sum = (l, r) -> l - r;
         assertEquals(-3, Collections.foldr(sum, 0.0, numberList).intValue());
     }

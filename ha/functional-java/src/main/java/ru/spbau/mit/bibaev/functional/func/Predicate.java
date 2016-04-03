@@ -13,6 +13,6 @@ public interface Predicate<ARG> extends Function<ARG, Boolean> {
         return arg -> !apply(arg);
     }
 
-    Predicate<Object> ALWAYS_TRUE = (arg -> true);
-    Predicate<Object> ALWAYS_FALSE = (arg -> false);
+    Predicate<Object> ALWAYS_TRUE = arg -> true;
+    Predicate<Object> ALWAYS_FALSE = arg -> false;
 }
