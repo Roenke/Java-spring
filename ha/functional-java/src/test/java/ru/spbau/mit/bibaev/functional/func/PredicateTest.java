@@ -6,6 +6,8 @@ import static org.junit.Assert.*;
 
 public class PredicateTest {
 
+    private final Predicate<Object> wrongPredicate = x -> x.equals(3);
+
     @Test
     public void or() {
         Predicate<Object> truePredicate = Predicate.ALWAYS_TRUE;
@@ -15,6 +17,8 @@ public class PredicateTest {
         assertTrue(falsePredicate.or(truePredicate).apply(10));
         assertTrue(truePredicate.or(truePredicate).apply(10));
         assertFalse(falsePredicate.or(falsePredicate).apply(10));
+
+        assertTrue(truePredicate.or(wrongPredicate).apply(null));
     }
 
     @Test
@@ -26,6 +30,8 @@ public class PredicateTest {
         assertFalse(falsePredicate.and(truePredicate).apply(10));
         assertTrue(truePredicate.and(truePredicate).apply(10));
         assertFalse(falsePredicate.and(falsePredicate).apply(10));
+
+        assertFalse(falsePredicate.and(wrongPredicate).apply(null));
     }
 
     @Test
