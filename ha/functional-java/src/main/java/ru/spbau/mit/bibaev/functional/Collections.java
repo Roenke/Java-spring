@@ -43,16 +43,7 @@ public class Collections {
     }
 
     public static <T> List<T> takeUnless(Predicate<? super T> predicate, Iterable<T> collection) {
-        List<T> result = new ArrayList<>();
-        for (T elem : collection) {
-            if (predicate.apply(elem)){
-                break;
-            }
-
-            result.add(elem);
-        }
-
-        return result;
+        return takeWhile(x -> !predicate.apply(x), collection);
     }
 
     public static <T, R> R foldl(Function2<R, ? super T, R> foldFunction, R startValue, Iterable<T> collection) {
