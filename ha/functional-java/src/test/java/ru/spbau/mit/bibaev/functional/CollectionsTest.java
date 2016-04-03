@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 public class CollectionsTest {
 
     @Test
-    public void map() throws Exception {
+    public void map() {
         ArrayList<Integer> intList = new ArrayList<>(Arrays.asList(1, 2, 3));
 
         Function1<Integer, Integer> square = value -> value * value;
@@ -25,7 +25,7 @@ public class CollectionsTest {
     }
 
     @Test
-    public void filter() throws Exception {
+    public void filter() {
         ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6));
         Predicate<Integer> even = x -> x % 2 == 0;
 
@@ -34,7 +34,7 @@ public class CollectionsTest {
     }
 
     @Test
-    public void takeWhile() throws Exception {
+    public void takeWhile() {
         ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
         Predicate<Integer> lessThenFive = x -> x < 5;
 
@@ -43,7 +43,7 @@ public class CollectionsTest {
     }
 
     @Test
-    public void takeUnless() throws Exception {
+    public void takeUnless() {
         ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
         Predicate<Integer> positive = x -> x > 0;
 
@@ -52,7 +52,7 @@ public class CollectionsTest {
     }
 
     @Test
-    public void foldl() throws Exception {
+    public void foldl() {
         ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 5));
         Function2<Double, Integer, Double> diff = (l, r) -> l - r;
 
@@ -60,7 +60,7 @@ public class CollectionsTest {
     }
 
     @Test
-    public void foldr() throws Exception {
+    public void foldr() {
         ArrayList<Integer> numberList = new ArrayList<>(Arrays.asList(1, 2, 3, 5));
         Function2<Integer, Double, Double> diff = (l, r) -> l - r;
         assertEquals(-3, Collections.foldr(diff, 0.0, numberList).intValue());

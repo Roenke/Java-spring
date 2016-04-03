@@ -18,10 +18,10 @@ public class Collections {
         return result;
     }
 
-    public static <T> List<T> filter(Predicate<? super T> predicate, Iterable<T> collection){
+    public static <T> List<T> filter(Predicate<? super T> predicate, Iterable<T> collection) {
         List<T> result = new ArrayList<>();
         for (T elem : collection) {
-            if(predicate.apply(elem)) {
+            if (predicate.apply(elem)) {
                 result.add(elem);
             }
         }
@@ -32,7 +32,7 @@ public class Collections {
     public static <T> List<T> takeWhile(Predicate<? super T> predicate, Iterable<T> collection) {
         List<T> result = new ArrayList<>();
         for (T elem : collection) {
-            if (!predicate.apply(elem)){
+            if (!predicate.apply(elem)) {
                 break;
             }
 
@@ -48,7 +48,7 @@ public class Collections {
 
     public static <T, R> R foldl(Function2<R, ? super T, R> foldFunction, R startValue, Iterable<T> collection) {
         R result = startValue;
-        for(T elem : collection) {
+        for (T elem : collection) {
             result = foldFunction.apply(result, elem);
         }
 

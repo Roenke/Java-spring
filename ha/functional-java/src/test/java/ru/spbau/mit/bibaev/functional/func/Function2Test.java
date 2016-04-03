@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 public class Function2Test {
 
     @Test
-    public void compose() throws Exception {
+    public void compose() {
         Function2<Double, Double, Double> mul = (a, b) -> a * b;
         Function1<Double, Integer> square = value -> (int) (value * value);
 
@@ -16,7 +16,7 @@ public class Function2Test {
     }
 
     @Test
-    public void bind1() throws Exception {
+    public void bind1() {
         Function2<Integer, Integer, Integer> mod = (a, b) -> a % b;
         Function1<Integer, Integer> mod144 = mod.bind1(144);
 
@@ -27,7 +27,7 @@ public class Function2Test {
     }
 
     @Test
-    public void bind2() throws Exception {
+    public void bind2() {
         Function2<Integer, Integer, Integer> div = (a, b) -> a / b;
         Function1<Integer, Integer> div2 = div.bind2(2);
 
@@ -37,7 +37,7 @@ public class Function2Test {
     }
 
     @Test
-    public void curry() throws Exception {
+    public void curry() {
         Function2<Long, Long, Long> div = (a, b) -> a / b;
 
         assertEquals(5, div.curry().apply(10L).apply(2L).intValue());

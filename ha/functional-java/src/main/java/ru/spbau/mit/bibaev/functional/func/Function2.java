@@ -3,7 +3,7 @@ package ru.spbau.mit.bibaev.functional.func;
 public interface Function2<ARG1, ARG2, RES> {
     RES apply(ARG1 arg1, ARG2 arg2);
 
-    default<R> Function2<ARG1, ARG2, R> compose(Function1<? super RES, R> g) {
+    default <R> Function2<ARG1, ARG2, R> compose(Function1<? super RES, R> g) {
         return (arg1, arg2) -> g.apply(apply(arg1, arg2));
     }
 

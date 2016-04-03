@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 public class PredicateTest {
 
     @Test
-    public void or() throws Exception {
+    public void or() {
         Predicate<Object> truePredicate = Predicate.ALWAYS_TRUE;
         Predicate<Object> falsePredicate = Predicate.ALWAYS_FALSE;
 
@@ -18,7 +18,7 @@ public class PredicateTest {
     }
 
     @Test
-    public void and() throws Exception {
+    public void and() {
         Predicate<Object> truePredicate = Predicate.ALWAYS_TRUE;
         Predicate<Object> falsePredicate = Predicate.ALWAYS_FALSE;
 
@@ -29,7 +29,7 @@ public class PredicateTest {
     }
 
     @Test
-    public void not() throws Exception {
+    public void not() {
         Predicate<Integer> equals10 = x -> x == 10;
 
         assertTrue(equals10.apply(10));
