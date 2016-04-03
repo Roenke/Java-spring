@@ -5,7 +5,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class Function2Test {
-
     @Test
     public void compose() {
         Function2<Double, Double, Double> mul = (a, b) -> a * b;
