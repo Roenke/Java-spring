@@ -38,4 +38,17 @@ public class PredicateTest {
         assertFalse(equals10.apply(11));
         assertTrue(equals10.not().apply(11));
     }
+
+    @Test
+    public void compose() {
+        Predicate<Integer> even = x -> x % 2 == 0;
+        Function1<Integer, Boolean> odd = even.compose(x -> !x);
+        assertTrue(even.apply(10));
+        assertFalse(odd.apply(10));
+        assertTrue(odd.apply(1));
+
+        Function1<Integer, Integer> integerPredicate = even.compose(x -> x ? 1 : 0);
+        assertEquals(1, (int) integerPredicate.apply(10));
+        assertEquals(0, (int) integerPredicate.apply(11));
+    }
 }
