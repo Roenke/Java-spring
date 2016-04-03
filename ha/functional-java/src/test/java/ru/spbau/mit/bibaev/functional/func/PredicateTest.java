@@ -19,6 +19,10 @@ public class PredicateTest {
         assertFalse(falsePredicate.or(falsePredicate).apply(10));
 
         assertTrue(truePredicate.or(wrongPredicate).apply(null));
+
+        Predicate<String> equals10 = "10"::equals;
+        Predicate<Object> equals12 = "12"::equals;
+        assertFalse(equals10.or(equals12).apply("14"));
     }
 
     @Test
@@ -32,6 +36,12 @@ public class PredicateTest {
         assertFalse(falsePredicate.and(falsePredicate).apply(10));
 
         assertFalse(falsePredicate.and(wrongPredicate).apply(null));
+
+        Predicate<Object> even = x -> (int) x % 2 == 0;
+        Predicate<Integer> notNull = x -> x != null;
+        assertTrue(notNull.and(even).apply(10));
+        assertFalse(notNull.and(even).apply(null));
+        assertFalse(notNull.and(even).apply(11));
     }
 
     @Test
@@ -53,7 +63,8 @@ public class PredicateTest {
         assertFalse(odd.apply(10));
         assertTrue(odd.apply(1));
 
-        Function1<Integer, Integer> integerPredicate = even.compose(x -> x ? 1 : 0);
+        Function1<Object, Integer> booleanToInteger = x -> (boolean)x ? 1 : 0;
+        Function1<Integer, Integer> integerPredicate = even.compose(booleanToInteger);
         assertEquals(1, (int) integerPredicate.apply(10));
         assertEquals(0, (int) integerPredicate.apply(11));
     }
