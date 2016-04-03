@@ -46,7 +46,7 @@ public class Collections {
         return takeWhile(x -> !predicate.apply(x), collection);
     }
 
-    public static <T, R> R foldl(Function2<R, ? super T, R> foldFunction, R startValue, Iterable<T> collection) {
+    public static <T, R> R foldl(Function2<? super R, ? super T, R> foldFunction, R startValue, Iterable<T> collection) {
         R result = startValue;
         for (T elem : collection) {
             result = foldFunction.apply(result, elem);
@@ -55,11 +55,11 @@ public class Collections {
         return result;
     }
 
-    public static <T, R> R foldr(Function2<? super T, R, R> function, R ini, Iterable<T> collection) {
+    public static <T, R> R foldr(Function2<? super T, ? super R, R> function, R ini, Iterable<T> collection) {
         return foldrInternal(function, ini, collection.iterator());
     }
 
-    private static <T, R> R foldrInternal(Function2<? super T, R, R> function, R ini, Iterator<T> iterator) {
+    private static <T, R> R foldrInternal(Function2<? super T, ? super R, R> function, R ini, Iterator<T> iterator) {
         if (!iterator.hasNext()) {
             return ini;
         }
