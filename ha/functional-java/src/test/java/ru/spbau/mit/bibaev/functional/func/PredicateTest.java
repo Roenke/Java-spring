@@ -15,7 +15,7 @@ public class PredicateTest {
         assertTrue(truePredicate.or(truePredicate).apply(10));
         assertFalse(falsePredicate.or(falsePredicate).apply(10));
 
-        assertTrue(truePredicate.or(wrongPredicate).apply(null));
+        assertTrue(truePredicate.or(WRONG_PREDICATE).apply(null));
 
         Predicate<String> equals10 = "10"::equals;
         Predicate<Object> equals12 = "12"::equals;
@@ -32,7 +32,7 @@ public class PredicateTest {
         assertTrue(truePredicate.and(truePredicate).apply(10));
         assertFalse(falsePredicate.and(falsePredicate).apply(10));
 
-        assertFalse(falsePredicate.and(wrongPredicate).apply(null));
+        assertFalse(falsePredicate.and(WRONG_PREDICATE).apply(null));
 
         Predicate<Object> even = x -> (int) x % 2 == 0;
         Predicate<Integer> notNull = x -> x != null;
@@ -66,5 +66,5 @@ public class PredicateTest {
         assertEquals(0, (int) integerPredicate.apply(11));
     }
 
-    private static final Predicate<Object> wrongPredicate = x -> x.equals(3);
+    private static final Predicate<Object> WRONG_PREDICATE = x -> x.equals(3);
 }
