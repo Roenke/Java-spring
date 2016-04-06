@@ -65,7 +65,24 @@ public final class FirstPartTasks {
     // Альбом, в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        throw new UnsupportedOperationException();
+        Comparator<Album> maxRatingComparator = new Comparator<Album>() {
+            @Override
+            public int compare(Album left, Album right) {
+                return Integer.compare(
+                        left.getTracks()
+                                .stream()
+                                .map(Track::getRating)
+                                .collect(Collectors.maxBy(Integer::compare))
+                                .orElse(0),
+                        right.getTracks()
+                                .stream()
+                                .map(Track::getRating)
+                                .collect(Collectors.maxBy(Integer::compare))
+                                .orElse(0));
+            }
+        };
+
+        return albums.collect(Collectors.minBy(maxRatingComparator));
     }
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
