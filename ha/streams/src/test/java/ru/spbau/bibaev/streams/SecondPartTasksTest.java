@@ -5,6 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class SecondPartTasksTest {
+    private static final double EPS = 1e-2;
 
     @Test
     public void testFindQuotes() {
@@ -13,7 +14,8 @@ public class SecondPartTasksTest {
 
     @Test
     public void testPiDividedBy4() {
-        fail();
+        double result = SecondPartTasks.piDividedBy4();
+        assertEquals(Math.PI / 4.0, result, EPS);
     }
 
     @Test

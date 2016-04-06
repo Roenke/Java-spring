@@ -2,10 +2,12 @@ package ru.spbau.bibaev.streams;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public final class SecondPartTasks {
 
-    private SecondPartTasks() {}
+    private SecondPartTasks() {
+    }
 
     // Найти строки из переданных файлов, в которых встречается указанная подстрока.
     public static List<String> findQuotes(List<String> paths, CharSequence sequence) {
@@ -16,7 +18,18 @@ public final class SecondPartTasks {
     // Стрелок атакует мишень и каждый раз попадает в произвольную точку квадрата.
     // Надо промоделировать этот процесс с помощью класса java.util.Random и посчитать, какова вероятность попасть в мишень.
     public static double piDividedBy4() {
-        throw new UnsupportedOperationException();
+        Random rand = new Random();
+        int success = 0;
+        int fail = 0;
+        for (int i = 0; i < ATTEMPT_COUNT; i++) {
+            final double x = rand.nextDouble() - 0.5;
+            final double y = rand.nextDouble() - 0.5;
+            if (x * x + y * y <= 0.25) {
+                success++;
+            }
+        }
+
+        return (double) success / ATTEMPT_COUNT;
     }
 
     // Дано отображение из имени автора в список с содержанием его произведений.
@@ -30,4 +43,6 @@ public final class SecondPartTasks {
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
         throw new UnsupportedOperationException();
     }
+
+    private final static int ATTEMPT_COUNT = 1000000;
 }
