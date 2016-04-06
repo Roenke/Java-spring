@@ -1,13 +1,15 @@
 package ru.spbau.bibaev.streams;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public final class FirstPartTasks {
 
-    private FirstPartTasks() {}
+    private FirstPartTasks() {
+    }
 
     // Список названий альбомов
     public static List<String> allNames(Stream<Album> albums) {
@@ -79,6 +81,6 @@ public final class FirstPartTasks {
 
     // Вернуть поток из объектов класса 'clazz'
     public static <R> Stream<R> filterIsInstance(Stream<?> s, Class<R> clazz) {
-        throw new UnsupportedOperationException();
+        return s.filter(clazz::isInstance).map(clazz::cast);
     }
 }
