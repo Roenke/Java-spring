@@ -1,7 +1,6 @@
 package ru.spbau.bibaev.streams;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -40,11 +39,18 @@ public final class FirstPartTasks {
 
     // Сгруппировать альбомы по артистам (в качестве значения вместо объекта 'Album' использовать его имя)
     public static Map<Artist, List<String>> groupByArtistMapName(Stream<Album> albums) {
-        throw new UnsupportedOperationException();
+        return albums
+                .collect(
+                        Collectors.groupingBy(
+                                Album::getArtist,
+                                Collectors.mapping(
+                                        Album::getName,
+                                        Collectors.toList())));
     }
 
     // Число повторяющихся альбомов в потоке
     public static long countAlbumDuplicates(Stream<Album> albums) {
+        // TODO: Try write it more pretty.
         HashSet<Album> contains = new HashSet<>();
         final long[] dupCount = {0};
         albums.forEach(x -> {
