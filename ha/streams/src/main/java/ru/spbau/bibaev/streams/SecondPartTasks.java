@@ -1,8 +1,10 @@
 package ru.spbau.bibaev.streams;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import ru.spbau.bibaev.utils.Pair;
 
 public final class SecondPartTasks {
 
@@ -35,7 +37,16 @@ public final class SecondPartTasks {
     // Дано отображение из имени автора в список с содержанием его произведений.
     // Надо вычислить, чья общая длина произведений наибольшая.
     public static String findPrinter(Map<String, List<String>> compositions) {
-        throw new UnsupportedOperationException();
+        return compositions.entrySet()
+                .stream()
+                .map(stringListEntry ->
+                        new Pair<>(stringListEntry.getKey(), stringListEntry.getValue()
+                                .stream()
+                                .mapToInt(String::length)
+                                .sum()))
+                .max((left, right) -> Integer.compare(left.getSecond(), right.getSecond()))
+                .orElse(new Pair<>(null, 0))
+                .getFirst();
     }
 
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.

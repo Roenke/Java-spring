@@ -2,6 +2,12 @@ package ru.spbau.bibaev.streams;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+
 import static org.junit.Assert.*;
 
 public class SecondPartTasksTest {
@@ -20,7 +26,9 @@ public class SecondPartTasksTest {
 
     @Test
     public void testFindPrinter() {
-        fail();
+        Map<String, List<String>> authorsMap = new HashMap<>();
+        authorsMap.put("Hello", Arrays.asList("Hello", "world"));
+        assertEquals("Hello", SecondPartTasks.findPrinter(authorsMap));
     }
 
     @Test
