@@ -64,7 +64,11 @@ public final class FirstPartTasks {
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
-        throw new UnsupportedOperationException();
+        // TODO: make more pretty code
+        return albums.sorted((l, r) -> -Double.compare(
+                    l.getTracks().stream().mapToInt(Track::getRating).average().orElse(0.0),
+                    r.getTracks().stream().mapToInt(Track::getRating).average().orElse(0.0)))
+                .collect(Collectors.toList());
     }
 
     // Произведение всех чисел потока по модулю 'modulo'
