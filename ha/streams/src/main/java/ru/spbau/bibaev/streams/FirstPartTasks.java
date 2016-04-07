@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+@SuppressWarnings("WeakerAccess")
 public final class FirstPartTasks {
 
     private FirstPartTasks() {
@@ -29,7 +30,11 @@ public final class FirstPartTasks {
     // Список альбомов, в которых есть хотя бы один трек с рейтингом более 95, отсортированный по названию
     public static List<Album> sortedFavorites(Stream<Album> albums) {
         Stream<Album> topAlbums = albums.filter(x -> x.getTracks().stream().anyMatch(y -> y.getRating() > 95));
-        return topAlbums.sorted((l, r) -> l.getName().compareTo(r.getName())).collect(Collectors.toList());
+        return topAlbums
+                .sorted((l, r) -> l
+                        .getName()
+                        .compareTo(r.getName()))
+                .collect(Collectors.toList());
     }
 
     // Сгруппировать альбомы по артистам
@@ -65,22 +70,18 @@ public final class FirstPartTasks {
     // Альбом, в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        Comparator<Album> maxRatingComparator = new Comparator<Album>() {
-            @Override
-            public int compare(Album left, Album right) {
-                return Integer.compare(
-                        left.getTracks()
-                                .stream()
-                                .map(Track::getRating)
-                                .collect(Collectors.maxBy(Integer::compare))
-                                .orElse(0),
-                        right.getTracks()
-                                .stream()
-                                .map(Track::getRating)
-                                .collect(Collectors.maxBy(Integer::compare))
-                                .orElse(0));
-            }
-        };
+        // TODO: make it more effective.
+        Comparator<Album> maxRatingComparator = (left, right) -> Integer.compare(
+                left.getTracks()
+                        .stream()
+                        .map(Track::getRating)
+                        .collect(Collectors.maxBy(Integer::compare))
+                        .orElse(0),
+                right.getTracks()
+                        .stream()
+                        .map(Track::getRating)
+                        .collect(Collectors.maxBy(Integer::compare))
+                        .orElse(0));
 
         return albums.collect(Collectors.minBy(maxRatingComparator));
     }
@@ -89,8 +90,16 @@ public final class FirstPartTasks {
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
         // TODO: make more pretty code
         return albums.sorted((l, r) -> -Double.compare(
-                    l.getTracks().stream().mapToInt(Track::getRating).average().orElse(0.0),
-                    r.getTracks().stream().mapToInt(Track::getRating).average().orElse(0.0)))
+                l.getTracks()
+                        .stream()
+                        .mapToInt(Track::getRating)
+                        .average()
+                        .orElse(0.0),
+                r.getTracks()
+                        .stream()
+                        .mapToInt(Track::getRating)
+                        .average()
+                        .orElse(0.0)))
                 .collect(Collectors.toList());
     }
 

@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import ru.spbau.bibaev.utils.Pair;
 
+@SuppressWarnings("WeakerAccess")
 public final class SecondPartTasks {
 
     public final int ATTEMPT_COUNT = 1000000;
@@ -23,7 +24,6 @@ public final class SecondPartTasks {
     public static double piDividedBy4() {
         Random rand = new Random(2016);
         int success = 0;
-        int fail = 0;
         for (int i = 0; i < ATTEMPT_COUNT; i++) {
             final double x = rand.nextDouble() - 0.5;
             final double y = rand.nextDouble() - 0.5;
