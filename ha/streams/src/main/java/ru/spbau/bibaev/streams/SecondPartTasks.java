@@ -2,11 +2,12 @@ package ru.spbau.bibaev.streams;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import ru.spbau.bibaev.utils.Pair;
 
 public final class SecondPartTasks {
+
+    public final int ATTEMPT_COUNT = 1000000;
 
     private SecondPartTasks() {
     }
@@ -20,7 +21,7 @@ public final class SecondPartTasks {
     // Стрелок атакует мишень и каждый раз попадает в произвольную точку квадрата.
     // Надо промоделировать этот процесс с помощью класса java.util.Random и посчитать, какова вероятность попасть в мишень.
     public static double piDividedBy4() {
-        Random rand = new Random();
+        Random rand = new Random(2016);
         int success = 0;
         int fail = 0;
         for (int i = 0; i < ATTEMPT_COUNT; i++) {
@@ -52,8 +53,14 @@ public final class SecondPartTasks {
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
-        throw new UnsupportedOperationException();
+        return orders
+                .stream()
+                .map(Map::entrySet)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (left, right) -> left + right));
     }
 
-    private final static int ATTEMPT_COUNT = 1000000;
 }
