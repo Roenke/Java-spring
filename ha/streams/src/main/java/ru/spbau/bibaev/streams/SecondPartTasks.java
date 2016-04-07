@@ -8,7 +8,7 @@ import ru.spbau.bibaev.utils.Pair;
 @SuppressWarnings("WeakerAccess")
 public final class SecondPartTasks {
 
-    public final int ATTEMPT_COUNT = 1000000;
+    public static final int ATTEMPT_COUNT = 1000000;
 
     private SecondPartTasks() {
     }
