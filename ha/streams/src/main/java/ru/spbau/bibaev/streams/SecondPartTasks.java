@@ -5,7 +5,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import ru.spbau.bibaev.utils.Pair;

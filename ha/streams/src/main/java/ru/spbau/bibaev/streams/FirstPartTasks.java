@@ -1,5 +1,7 @@
 package ru.spbau.bibaev.streams;
 
+import ru.spbau.bibaev.utils.Pair;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -31,9 +33,7 @@ public final class FirstPartTasks {
     public static List<Album> sortedFavorites(Stream<Album> albums) {
         Stream<Album> topAlbums = albums.filter(x -> x.getTracks().stream().anyMatch(y -> y.getRating() > 95));
         return topAlbums
-                .sorted((l, r) -> l
-                        .getName()
-                        .compareTo(r.getName()))
+                .sorted(Comparator.comparing(Album::getName))
                 .collect(Collectors.toList());
     }
 
@@ -66,36 +66,22 @@ public final class FirstPartTasks {
     // Альбом, в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        // TODO: make it more effective.
-        Comparator<Album> maxRatingComparator = (left, right) -> Integer.compare(
-                left.getTracks()
-                        .stream()
+        return albums
+                .map(a -> new Pair<>(a, a.getTracks().stream()
                         .map(Track::getRating)
                         .collect(Collectors.maxBy(Integer::compare))
-                        .orElse(0),
-                right.getTracks()
-                        .stream()
-                        .map(Track::getRating)
-                        .collect(Collectors.maxBy(Integer::compare))
-                        .orElse(0));
-
-        return albums.collect(Collectors.minBy(maxRatingComparator));
+                        .orElse(0)))
+                .min(Comparator.comparingInt(Pair::getSecond))
+                .map(Pair::getFirst);
     }
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
-        // TODO: make more pretty code
-        return albums.sorted((l, r) -> -Double.compare(
-                l.getTracks()
-                        .stream()
-                        .mapToInt(Track::getRating)
-                        .average()
-                        .orElse(0.0),
-                r.getTracks()
-                        .stream()
-                        .mapToInt(Track::getRating)
-                        .average()
-                        .orElse(0.0)))
+        return albums
+                .map(a -> new Pair<>(a,
+                        a.getTracks().stream().mapToInt(Track::getRating).average().orElse(0.0)))
+                .sorted((p1, p2) -> Double.compare(p2.getSecond(), p1.getSecond()))
+                .map(Pair::getFirst)
                 .collect(Collectors.toList());
     }
 
