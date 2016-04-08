@@ -57,7 +57,6 @@ public final class FirstPartTasks {
     public static long countAlbumDuplicates(Stream<Album> albums) {
         // TODO: Try write it more pretty.
         int[] count = new int[1];
-        count[0] = 0;
         long distinctCount = albums.peek(x -> count[0]++).distinct().count();
 
         return count[0] - distinctCount;

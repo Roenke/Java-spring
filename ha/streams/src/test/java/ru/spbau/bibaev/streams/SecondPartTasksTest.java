@@ -5,9 +5,14 @@ import org.junit.Test;
 
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SecondPartTasksTest {
     private static final double EPS = 1e-2;
@@ -18,17 +23,32 @@ public class SecondPartTasksTest {
 
     @Test(expected = UncheckedIOException.class)
     public void testFindQuotesFileNotFound() {
-        List<String> filenames = Arrays.asList("/dev/null", "/dev/random");
+        List<String> filenames = Arrays.asList("file", "file1");
         SecondPartTasks.findQuotes(filenames, "abc");
     }
 
     @Test()
     public void testFindQuotes() {
-        String subString1 = "a";
-        List<String> lines = SecondPartTasks
-                .findQuotes(Collections.singletonList(getAbsolutePathByResourceName(TEST_FILE_1)), subString1);
-        long count = lines.stream().peek(o -> assertTrue(o.contains(subString1))).count();
-        assertEquals(2, count);
+        Function<String, List<String>> find = input -> SecondPartTasks.findQuotes(Arrays.asList(
+                getAbsolutePathByResourceName(TEST_FILE_1),
+                getAbsolutePathByResourceName(TEST_FILE_2),
+                getAbsolutePathByResourceName(TEST_FILE_3)
+                ), input);
+        // check no match
+        long count = find.apply("unknown quote").stream().count();
+        assertEquals(0, count);
+
+        // check match line
+        count = find.apply("ccc").stream().peek(o -> assertTrue(o.contains("ccc"))).count();
+        assertEquals(1, count);
+
+        // check match one word in line
+        count = find.apply("word").stream().peek(o -> assertTrue(o.contains("word"))).count();
+        assertEquals(1, count);
+
+        // check match as substring of some line
+        count = find.apply("out").stream().peek(o -> assertTrue(o.contains("out"))).count();
+        assertEquals(1, count);
     }
 
     @Test
@@ -72,7 +92,7 @@ public class SecondPartTasksTest {
 
     private String getAbsolutePathByResourceName(String name) {
         URL resource = ClassLoader.getSystemClassLoader().getResource(name);
-        if(resource == null) {
+        if (resource == null) {
             return null;
         }
 

@@ -57,9 +57,9 @@ public final class SecondPartTasks {
                                 .stream()
                                 .mapToInt(String::length)
                                 .sum()))
-                .max((left, right) -> Integer.compare(left.getSecond(), right.getSecond()))
-                .orElse(new Pair<>(null, 0))
-                .getFirst();
+                .max(Comparator.comparing(Pair::getSecond))
+                .map(Pair::getFirst)
+                .orElse(null);
     }
 
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
@@ -72,7 +72,7 @@ public final class SecondPartTasks {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
-                        (left, right) -> left + right));
+                        Integer::sum));
     }
 
 }
