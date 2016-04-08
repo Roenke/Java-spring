@@ -5,14 +5,19 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
+import com.sun.xml.internal.ws.util.StreamUtils;
 import ru.spbau.bibaev.utils.Pair;
 
 @SuppressWarnings("WeakerAccess")
 public final class SecondPartTasks {
 
     public static final int ATTEMPT_COUNT = 1000000;
+    public static final double TARGET_RANGE = 0.5;
 
     private SecondPartTasks() {
     }
@@ -34,15 +39,18 @@ public final class SecondPartTasks {
     // Стрелок атакует мишень и каждый раз попадает в произвольную точку квадрата.
     // Надо промоделировать этот процесс с помощью класса java.util.Random и посчитать, какова вероятность попасть в мишень.
     public static double piDividedBy4() {
-        Random rand = new Random(2016);
-        int success = 0;
-        for (int i = 0; i < ATTEMPT_COUNT; i++) {
-            final double x = rand.nextDouble() - 0.5;
-            final double y = rand.nextDouble() - 0.5;
-            if (x * x + y * y <= 0.25) {
-                success++;
-            }
-        }
+        Random rand = new Random();
+        Predicate<Pair<Double, Double>> isSuccessShow = p -> {
+            double x = p.getFirst();
+            double y = p.getSecond();
+            return x * x + y * y <= TARGET_RANGE * TARGET_RANGE;
+        };
+
+        long success = Stream
+                .generate(() -> new Pair<>(rand.nextDouble() - TARGET_RANGE, rand.nextDouble() - TARGET_RANGE))
+                .limit(ATTEMPT_COUNT)
+                .filter(isSuccessShow)
+                .count();
 
         return (double) success / ATTEMPT_COUNT;
     }
