@@ -15,20 +15,20 @@ import ru.spbau.bibaev.utils.Pair;
 public final class SecondPartTasks {
 
     public static final int ATTEMPT_COUNT = 1000000;
-    public static final double TARGET_RANGE = 0.5;
 
     private SecondPartTasks() {
     }
 
     // Найти строки из переданных файлов, в которых встречается указанная подстрока.
     public static List<String> findQuotes(List<String> paths, CharSequence sequence) throws UncheckedIOException {
-        return paths.stream().flatMap(s -> {
-            try {
-                return Files.lines(Paths.get(s)).filter(l -> !l.isEmpty());
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        })
+        return paths.stream()
+                .flatMap(s -> {
+                    try {
+                        return Files.lines(Paths.get(s)).filter(l -> !l.isEmpty());
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                })
                 .filter(s -> s.contains(sequence))
                 .collect(Collectors.toList());
     }
@@ -38,7 +38,7 @@ public final class SecondPartTasks {
     // Надо промоделировать этот процесс с помощью класса java.util.Random и посчитать, какова вероятность попасть в мишень.
     public static double piDividedBy4() {
         Random rand = new Random();
-        Predicate<Pair<Double, Double>> isSuccessShow = p -> {
+        Predicate<Pair<Double, Double>> isSuccessShot = p -> {
             double x = p.getFirst();
             double y = p.getSecond();
             return x * x + y * y <= TARGET_RANGE * TARGET_RANGE;
@@ -47,7 +47,7 @@ public final class SecondPartTasks {
         long success = Stream
                 .generate(() -> new Pair<>(rand.nextDouble() - TARGET_RANGE, rand.nextDouble() - TARGET_RANGE))
                 .limit(ATTEMPT_COUNT)
-                .filter(isSuccessShow)
+                .filter(isSuccessShot)
                 .count();
 
         return (double) success / ATTEMPT_COUNT;
@@ -56,8 +56,7 @@ public final class SecondPartTasks {
     // Дано отображение из имени автора в список с содержанием его произведений.
     // Надо вычислить, чья общая длина произведений наибольшая.
     public static String findPrinter(Map<String, List<String>> compositions) {
-        return compositions.entrySet()
-                .stream()
+        return compositions.entrySet().stream()
                 .map(stringListEntry ->
                         new Pair<>(stringListEntry.getKey(), stringListEntry.getValue()
                                 .stream()
@@ -71,8 +70,7 @@ public final class SecondPartTasks {
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
-        return orders
-                .stream()
+        return orders.stream()
                 .map(Map::entrySet)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toMap(
@@ -81,4 +79,5 @@ public final class SecondPartTasks {
                         Integer::sum));
     }
 
+    private static final double TARGET_RANGE = 0.5;
 }

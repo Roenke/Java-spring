@@ -25,14 +25,19 @@ public final class FirstPartTasks {
 
     // Список треков, отсортированный лексикографически по названию, включающий все треки альбомов из 'albums'
     public static List<String> allTracksSorted(Stream<Album> albums) {
-        Stream<Track> trackStream = albums.map(Album::getTracks).flatMap(Collection::stream);
-        return trackStream.map(Track::getName).sorted().collect(Collectors.toList());
+        return albums
+                .map(Album::getTracks)
+                .flatMap(Collection::stream)
+                .map(Track::getName)
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     // Список альбомов, в которых есть хотя бы один трек с рейтингом более 95, отсортированный по названию
     public static List<Album> sortedFavorites(Stream<Album> albums) {
-        Stream<Album> topAlbums = albums.filter(x -> x.getTracks().stream().anyMatch(y -> y.getRating() > 95));
-        return topAlbums
+        return albums
+                .filter(x -> x.getTracks().stream()
+                        .anyMatch(y -> y.getRating() > 95))
                 .sorted(Comparator.comparing(Album::getName))
                 .collect(Collectors.toList());
     }
@@ -55,10 +60,8 @@ public final class FirstPartTasks {
 
     // Число повторяющихся альбомов в потоке
     public static long countAlbumDuplicates(Stream<Album> albums) {
-        // TODO: Try write it more pretty.
-        int[] count = new int[1];
+        long[] count = new long[1];
         long distinctCount = albums.peek(x -> count[0]++).distinct().count();
-
         return count[0] - distinctCount;
     }
 
@@ -67,8 +70,8 @@ public final class FirstPartTasks {
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
         return albums
                 .map(a -> new Pair<>(a, a.getTracks().stream()
-                        .map(Track::getRating)
-                        .collect(Collectors.maxBy(Integer::compare))
+                        .mapToInt(Track::getRating)
+                        .max()
                         .orElse(0)))
                 .min(Comparator.comparingInt(Pair::getSecond))
                 .map(Pair::getFirst);
@@ -76,10 +79,14 @@ public final class FirstPartTasks {
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
+
         return albums
                 .map(a -> new Pair<>(a,
-                        a.getTracks().stream().mapToInt(Track::getRating).average().orElse(0.0)))
-                .sorted((p1, p2) -> Double.compare(p2.getSecond(), p1.getSecond()))
+                        a.getTracks().stream()
+                                .mapToInt(Track::getRating)
+                                .average()
+                                .orElse(0.0)))
+                .sorted(Collections.reverseOrder(Comparator.comparing(Pair::getSecond)))
                 .map(Pair::getFirst)
                 .collect(Collectors.toList());
     }
