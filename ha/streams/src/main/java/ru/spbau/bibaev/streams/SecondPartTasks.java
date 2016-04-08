@@ -1,6 +1,11 @@
 package ru.spbau.bibaev.streams;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import ru.spbau.bibaev.utils.Pair;
@@ -14,8 +19,16 @@ public final class SecondPartTasks {
     }
 
     // Найти строки из переданных файлов, в которых встречается указанная подстрока.
-    public static List<String> findQuotes(List<String> paths, CharSequence sequence) {
-        throw new UnsupportedOperationException();
+    public static List<String> findQuotes(List<String> paths, CharSequence sequence) throws UncheckedIOException {
+        return paths.stream().flatMap(s -> {
+            try {
+                return Files.lines(Paths.get(s)).filter(l -> !l.isEmpty());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        })
+                .filter(s -> s.contains(sequence))
+                .collect(Collectors.toList());
     }
 
     // В квадрат с длиной стороны 1 вписана мишень.

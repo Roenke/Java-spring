@@ -1,26 +1,34 @@
 package ru.spbau.bibaev.streams;
 
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Interner;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.stream.Stream;
+import java.io.UncheckedIOException;
+import java.net.URL;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class SecondPartTasksTest {
     private static final double EPS = 1e-2;
+    private static final String TEST_FILE_1 = "test1.txt";
+    private static final String TEST_FILE_2 = "test2.txt";
+    private static final String TEST_FILE_3 = "test3.txt";
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 
-    @Test
+    @Test(expected = UncheckedIOException.class)
+    public void testFindQuotesFileNotFound() {
+        List<String> filenames = Arrays.asList("/dev/null", "/dev/random");
+        SecondPartTasks.findQuotes(filenames, "abc");
+    }
+
+    @Test()
     public void testFindQuotes() {
-        fail();
+        String subString1 = "a";
+        List<String> lines = SecondPartTasks
+                .findQuotes(Collections.singletonList(getAbsolutePathByResourceName(TEST_FILE_1)), subString1);
+        long count = lines.stream().peek(o -> assertTrue(o.contains(subString1))).count();
+        assertEquals(2, count);
     }
 
     @Test
@@ -60,5 +68,19 @@ public class SecondPartTasksTest {
         assertEquals(15, result.get("banana").intValue());
         assertEquals(4, result.get("lemon").intValue());
         assertEquals(12, result.get("pineapple").intValue());
+    }
+
+    private String getAbsolutePathByResourceName(String name) {
+        URL resource = ClassLoader.getSystemClassLoader().getResource(name);
+        if(resource == null) {
+            return null;
+        }
+
+        String path = resource.getPath();
+        if (IS_WINDOWS) {
+            path = path.substring(1);
+        }
+
+        return path;
     }
 }
