@@ -15,12 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SecondPartTasksTest {
-    private static final double EPS = 1e-2;
-    private static final String TEST_FILE_1 = "test1.txt";
-    private static final String TEST_FILE_2 = "test2.txt";
-    private static final String TEST_FILE_3 = "test3.txt";
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
-
     @Test(expected = UncheckedIOException.class)
     public void testFindQuotesFileNotFound() {
         List<String> filenames = Arrays.asList("file", "file1");
@@ -33,7 +27,7 @@ public class SecondPartTasksTest {
                 getAbsolutePathByResourceName(TEST_FILE_1),
                 getAbsolutePathByResourceName(TEST_FILE_2),
                 getAbsolutePathByResourceName(TEST_FILE_3)
-                ), input);
+        ), input);
         // check no match
         long count = find.apply("unknown quote").stream().count();
         assertEquals(0, count);
@@ -67,21 +61,7 @@ public class SecondPartTasksTest {
     @Test
     public void testCalculateGlobalOrder() {
         // TODO: Move string values to class private final fields.
-
-        List<Map<String, Integer>> orders =
-                Arrays.asList(
-                        ImmutableMap.of(
-                                "apples", 3,
-                                "banana", 5,
-                                "lemon", 4
-                        ),
-                        ImmutableMap.of(
-                                "apples", 2,
-                                "banana", 10,
-                                "pineapple", 12
-                        )
-                );
-        Map<String, Integer> result = SecondPartTasks.calculateGlobalOrder(orders);
+        Map<String, Integer> result = SecondPartTasks.calculateGlobalOrder(ORDERS);
 
         assertEquals(4, result.size());
         assertEquals(5, result.get("apples").intValue());
@@ -103,4 +83,24 @@ public class SecondPartTasksTest {
 
         return path;
     }
+
+    private static final double EPS = 1e-2;
+    private static final String TEST_FILE_1 = "test1.txt";
+    private static final String TEST_FILE_2 = "test2.txt";
+    private static final String TEST_FILE_3 = "test3.txt";
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
+
+    private static final List<Map<String, Integer>> ORDERS =
+            Arrays.asList(
+                    ImmutableMap.of(
+                            "apples", 3,
+                            "banana", 5,
+                            "lemon", 4
+                    ),
+                    ImmutableMap.of(
+                            "apples", 2,
+                            "banana", 10,
+                            "pineapple", 12
+                    )
+            );
 }
