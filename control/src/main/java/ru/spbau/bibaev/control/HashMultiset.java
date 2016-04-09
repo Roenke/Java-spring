@@ -2,16 +2,17 @@ package ru.spbau.bibaev.control;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
+
     @Override
     public int count(Object element) {
-        return elementCountMapping.getOrDefault(element, 0);
+        return map.getOrDefault(element, 0);
     }
 
     @Override
     public Set<E> elementSet() {
-        // TODO fix it.
-        return elementCountMapping.keySet();
+        return map.keySet();
     }
 
     @Override
@@ -20,77 +21,91 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
             @Override
             public Iterator<Entry<E>> iterator() {
                 return new Iterator<Entry<E>>() {
-
-                    private final Iterator<Map.Entry<E, Integer>> iterator = elementCountMapping.entrySet().iterator();
+                    private int currentCount;
 
                     @Override
                     public boolean hasNext() {
-                        return iterator().hasNext();
+                        return iterator.hasNext();
                     }
 
                     @Override
                     public Entry<E> next() {
-                        return new Entry<E>() {
-
-                            private final Map.Entry<E, Integer> entry = iterator.next();
+                        final Entry<E> entry = new Entry<E>() {
+                            private final Map.Entry<E, Integer> next = iterator.next();
 
                             @Override
                             public E getElement() {
-                                return entry.getKey();
+                                return next.getKey();
                             }
 
                             @Override
                             public int getCount() {
-                                return entry.getValue();
+                                return next.getValue();
                             }
                         };
+
+                        currentCount = entry.getCount();
+                        return entry;
+                    }
+
+                    @Override
+                    public void remove() {
+                        iterator.remove();
+                        size -= currentCount;
                     }
                 };
             }
 
             @Override
             public int size() {
-                return 0;
+                return map.size();
             }
+
+            private final Iterator<Map.Entry<E, Integer>> iterator = map.entrySet().iterator();
         };
     }
 
     @Override
     public Iterator<E> iterator() {
         return new Iterator<E>() {
-            private final Iterator<Map.Entry<E, Integer>> iterator = elementCountMapping.entrySet().iterator();
-
-            private E currElem = null;
-            private int currCount = 0;
-
-            private boolean wasRemoved = false;
-
             @Override
             public boolean hasNext() {
-                return currCount> 0 || iterator.hasNext();
+                return elementCount > 0 || iterator.hasNext();
             }
 
             @Override
             public E next() {
-                wasRemoved = false;
-                if (currCount > 0) {
-                    currCount--;
-                    return currElem;
+                wasDeleted = false;
+                if (elementCount == 0) {
+                    Map.Entry<E, Integer> next = iterator.next();
+                    elementCount = next.getValue();
+                    current = next.getKey();
                 }
+                --elementCount;
 
-                final Map.Entry<E, Integer> next = iterator.next();
-                currElem = next.getKey();
-                currCount = next.getValue();
-                currCount--;
-                return currElem;
+                return current;
             }
 
             @Override
             public void remove() {
-                if (wasRemoved) {
-                    throw new IllegalStateException("Element already removed");
+                if (wasDeleted || current == null) {
+                    throw new IllegalStateException();
                 }
+
+                int count = map.getOrDefault(current, 0);
+                if (count == 1) {
+                    iterator.remove();
+                } else {
+                    map.put(current, count - 1);
+                }
+                size--;
+                wasDeleted = true;
             }
+
+            private boolean wasDeleted = false;
+            private E current = null;
+            private int elementCount = 0;
+            private Iterator<Map.Entry<E, Integer>> iterator = map.entrySet().iterator();
         };
     }
 
@@ -100,28 +115,27 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
     }
 
     @Override
-    public boolean contains(Object o) {
-        return elementCountMapping.getOrDefault(o, 0) != 0;
-    }
-
-    @Override
     public boolean add(E e) {
-        final int count = elementCountMapping.getOrDefault(e, 0);
-        elementCountMapping.put(e, count + 1);
+        int count = map.getOrDefault(e, 0);
+
+        map.put(e, count + 1);
         size++;
         return true;
     }
 
     @Override
     public boolean remove(Object o) {
-        final Integer count = elementCountMapping.getOrDefault(o, 0);
+        int count = map.getOrDefault(o, 0);
+
         if (count == 0) {
             return false;
         }
+
         if (count == 1) {
-            elementCountMapping.remove(o);
-        } else {
-            elementCountMapping.put((E) o, count - 1);
+            map.remove(o);
+        }
+        else{
+            map.put((E) o, count - 1);
         }
 
         size--;
@@ -130,91 +144,10 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
 
     @Override
     public void clear() {
-        elementCountMapping.clear();
+        map.clear();
         size = 0;
     }
 
-    private final LinkedHashMap<E, Integer> elementCountMapping = new LinkedHashMap<E, Integer>();
+    private final LinkedHashMap<E, Integer> map = new LinkedHashMap<>();
     private int size = 0;
-
-    private final class HashMultisetEntry<E> implements Entry<E> {
-
-        public HashMultisetEntry(E elem, int c) {
-            element = elem;
-            count = c;
-        }
-
-        @Override
-        public E getElement() {
-            return element;
-        }
-
-        @Override
-        public int getCount() {
-            return count;
-        }
-
-        private E element;
-        private int count;
-    }
-
-    private final class EntrySetIterator<E> implements Iterator<Entry<E>> {
-        public EntrySetIterator(Set<E> elems, HashMultiset<E> parent) {
-            internalIterator = elems.iterator();
-            parentMultiset = parent;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public Entry<E> next() {
-            current = internalIterator.next();
-            return new HashMultisetEntry<E>(current, parentMultiset.count(current));
-        }
-
-        @Override
-        public void remove() {
-            parentMultiset.remove(current);
-        }
-
-        private E current;
-        private HashMultiset<E> parentMultiset;
-        private Iterator<E> internalIterator;
-    }
-
-    private final class HashMultisetIterator<E> implements Iterator<E> {
-        public HashMultisetIterator(Set<E> keySet, HashMultiset<E> multiset) {
-            internalIterator = keySet.iterator();
-            parentMultiset = multiset;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return internalIterator.hasNext();
-        }
-
-        @Override
-        public E next() {
-            if (yetCount == 0) {
-                currentElem = internalIterator.next();
-                yetCount = parentMultiset.count(currentElem);
-            }
-
-            yetCount--;
-            return currentElem;
-        }
-
-        @Override
-        public void remove() {
-            parentMultiset.remove(currentElem);
-        }
-
-        private E currentElem = null;
-        private int yetCount = 0;
-        private Iterator<E> internalIterator;
-        private HashMultiset<E> parentMultiset;
-    }
 }
