@@ -17,8 +17,8 @@ import static org.junit.Assert.assertTrue;
 public class SecondPartTasksTest {
     @Test(expected = UncheckedIOException.class)
     public void testFindQuotesFileNotFound() {
-        List<String> filenames = Arrays.asList("file", "file1");
-        SecondPartTasks.findQuotes(filenames, "abc");
+        List<String> fileNames = Arrays.asList("file", "file1");
+        SecondPartTasks.findQuotes(fileNames, "abc");
     }
 
     @Test()
@@ -54,13 +54,13 @@ public class SecondPartTasksTest {
     @Test
     public void testFindPrinter() {
         Map<String, List<String>> authorsMap = new HashMap<>();
-        authorsMap.put("Hello", Arrays.asList("Hello", "world"));
-        assertEquals("Hello", SecondPartTasks.findPrinter(authorsMap));
+        authorsMap.put("Пушкин", Arrays.asList("Eugenie Onegin content...", "Captain daughter content..."));
+        authorsMap.put("Замятин", Arrays.asList("We content...", "d-503 content..."));
+        assertEquals("Пушкин", SecondPartTasks.findPrinter(authorsMap));
     }
 
     @Test
     public void testCalculateGlobalOrder() {
-        // TODO: Move string values to class private final fields.
         Map<String, Integer> result = SecondPartTasks.calculateGlobalOrder(ORDERS);
 
         assertEquals(4, result.size());
@@ -77,7 +77,7 @@ public class SecondPartTasksTest {
         }
 
         String path = resource.getPath();
-        if (IS_WINDOWS) {
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             path = path.substring(1);
         }
 
@@ -88,7 +88,6 @@ public class SecondPartTasksTest {
     private static final String TEST_FILE_1 = "test1.txt";
     private static final String TEST_FILE_2 = "test2.txt";
     private static final String TEST_FILE_3 = "test3.txt";
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
 
     private static final List<Map<String, Integer>> ORDERS =
             Arrays.asList(

@@ -15,6 +15,6 @@ public class Pair<T1, T2> {
         return second;
     }
 
-    private T1 first;
-    private T2 second;
+    private final T1 first;
+    private final T2 second;
 }
