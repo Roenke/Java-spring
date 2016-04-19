@@ -1,13 +1,11 @@
 package task;
 
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-
+@SuppressWarnings("WeakerAccess")
 public class Injector {
 
     /**
@@ -15,50 +13,67 @@ public class Injector {
      * `implementationClassNames` for concrete dependencies.
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws
-            ImplementationNotFoundException,
-            InjectionCycleException, ClassNotFoundException,
-            IllegalAccessException, InvocationTargetException,
-            InstantiationException {
-        Class cl;
-
-        HashMap<Class, Object> objects = new HashMap<Class, Object>();
-//        if(implementationClassNames.contains(rootClassName)) {
-//            throw new InjectionCycleException();
-//        }
-
-        cl = Class.forName(rootClassName); // no except guarantee
-
-        Constructor cons = cl.getConstructors()[0];
-        Class[] params = cons.getParameterTypes();
-
-        ArrayList<Object> args = new ArrayList<Object>();
-        for (Class param : params) {
-            if (objects.containsKey(param)) {
-                args.add(objects.get(param));
-            }
-            else {
-                String name = param.getCanonicalName();
-//                Object impl = getImpl(name, implementationClassNames);
-                objects.put(param, initialize(name, implementationClassNames));
-                args.add(objects.get(param));
-            }
-        }
-
-        if(args.size() == 0) {
-            return cons.newInstance();
-        }
-
-        return cons.newInstance(args.toArray());
+            Exception {
+        Class cl = Class.forName(rootClassName);
+        return initClass(cl, implementationClassNames, new HashSet<Object>());
     }
 
-    private static Object getImpl(String name, List<String> implementationClassNames) throws
-            ImplementationNotFoundException {
-        Class cl;
-        try {
-            cl = Class.forName(name);
-        } catch (ClassNotFoundException e) {
+    private static Object initClass(Class cl, List<String> implNames, HashSet<Object> forInit) throws
+            InjectionCycleException, IllegalAccessException, AmbiguousImplementationException,
+            ImplementationNotFoundException, InvocationTargetException, InstantiationException {
+        Class[] paramsTypes = cl.getConstructors()[0].getParameterTypes();
+
+        if(forInit.contains(cl)) {
+            throw new InjectionCycleException();
+        }
+
+        ArrayList<Object> args = new ArrayList<Object>();
+
+        for(Class param : paramsTypes) {
+            args.add(implNames.contains(param.getCanonicalName())
+                    ? initClass(param, implNames, forInit)
+                    : findUniqueImplementation(param, implNames, forInit));
+        }
+
+        Object obj;
+        Constructor cons = cl.getConstructors()[0];
+        if(args.size() == 0) {
+            obj = cons.newInstance();
+        }
+        else{
+            obj = cons.newInstance(args.toArray());
+        }
+
+        forInit.add(obj);
+        return obj;
+    }
+
+    private static Object findUniqueImplementation(Class<?> cl, List<String> implNames, HashSet<Object> initialized)
+            throws ImplementationNotFoundException, AmbiguousImplementationException,
+            InjectionCycleException, InvocationTargetException, IllegalAccessException,
+            InstantiationException {
+        Class<?> result = null;
+        for (String dependency : implNames) {
+            Class der;
+            try {
+                der = Class.forName(dependency);
+            } catch (ClassNotFoundException e) {
+                throw new ImplementationNotFoundException();
+            }
+            if (cl.isAssignableFrom(der)) {
+                if (result != null) {
+                    throw new AmbiguousImplementationException();
+                }
+
+                result = der;
+            }
+        }
+
+        if (result == null) {
             throw new ImplementationNotFoundException();
         }
-        return null;
+
+        initialized.remove(cl.getCanonicalName());
+        return initClass(result, implNames, initialized);
     }
 }
