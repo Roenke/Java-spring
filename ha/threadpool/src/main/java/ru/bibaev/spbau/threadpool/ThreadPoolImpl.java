@@ -1,11 +1,7 @@
 package ru.bibaev.spbau.threadpool;
 
-import ru.bibaev.spbau.threadpool.utils.Pair;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
@@ -21,11 +17,11 @@ public class ThreadPoolImpl implements ThreadPool {
     @Override
     public void shutdown() throws InterruptedException {
         synchronized (tasks) {
-            for (Pair<Runnable, LightFuture> task : tasks) {
-                synchronized (task.getSecond()) {
-                    ((LightFutureImpl) task.getSecond())
-                            .exception(new LightExecutionException("Thread pool is over."));
-                    task.getSecond().notifyAll();
+            for (Task task : tasks) {
+                synchronized (task.getLightFuture()) {
+                    ((Task.Future) task.getLightFuture())
+                            .setException(new LightExecutionException("Thread pool is over."));
+                    task.getLightFuture().notifyAll();
                 }
             }
 
@@ -40,49 +36,152 @@ public class ThreadPoolImpl implements ThreadPool {
 
     @Override
     public <R> LightFuture<R> add(Supplier<R> supplier) {
-        LightFutureImpl<R> lightFuture = new LightFutureImpl<>(this);
-        Runnable task = () -> {
-            try {
-                R res = supplier.get();
-                lightFuture.result(res);
-            } catch (Exception e) {
-                lightFuture.exception(new LightExecutionException(e));
-            }
-
-            synchronized (lightFuture) {
-                lightFuture.notifyAll();
-            }
-        };
-
+        Task<R> task = new Task<>(supplier);
         synchronized (tasks) {
-            tasks.add(new Pair<>(task, lightFuture));
+            tasks.add(task);
             tasks.notifyAll();
         }
-
-        return lightFuture;
+        return task.getLightFuture();
     }
 
-    private final Queue<Pair<Runnable, LightFuture>> tasks = new LinkedList<>();
+    private final Queue<Task> tasks = new LinkedList<>();
     private final Collection<Thread> executors = new ArrayList<>();
+
+    private class Task<R> implements Runnable {
+        private class Future implements LightFuture<R> {
+            public Future(Task parentTask) {
+                task = parentTask;
+            }
+
+            public void setResult(R res) {
+                result = res;
+            }
+
+            public void setException(LightExecutionException ex) {
+                exception = ex;
+            }
+
+            @Override
+            public boolean isReady() {
+                return result != null || exception != null;
+            }
+
+            @Override
+            public synchronized R get() throws LightExecutionException {
+                if (exception != null) {
+                    throw exception;
+                }
+
+                try {
+                    while (!isReady()) {
+                        wait();
+                    }
+                } catch (InterruptedException ignored) {
+                }
+
+                return result;
+            }
+
+            @Override
+            public synchronized <T> LightFuture<T> thenApply(Function<R, T> function) {
+                Supplier<T> newSupplier = () -> function.apply(result);
+                Task<T> newTask = new Task<>(newSupplier);
+                if (!isReady()) {
+                    task.addDep(newTask);
+                } else {
+                    if (exception == null) {
+                        synchronized (tasks) {
+                            tasks.add(newTask);
+                            tasks.notifyAll();
+                        }
+                    } else {
+                        newTask.fail();
+                    }
+                }
+
+
+                return newTask.getLightFuture();
+            }
+
+            private LightExecutionException exception;
+            private R result;
+            private final Task task;
+        }
+
+        public Task(Supplier<R> sup) {
+            supplier = sup;
+        }
+
+        public LightFuture<R> getLightFuture() {
+            return future;
+        }
+
+        public void fail() {
+            synchronized (future) {
+                future.setException(new LightExecutionException("Source future not completed."));
+                future.notifyAll();
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                R res = supplier.get();
+                synchronized (future) {
+                    future.setResult(res);
+                    future.notifyAll();
+                }
+
+                synchronized (tasks) {
+                    tasks.addAll(depends);
+                    tasks.notifyAll();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                synchronized (future) {
+                    future.setException(new LightExecutionException(e));
+                    future.notifyAll();
+                }
+                depends.forEach(Task::fail);
+            }
+        }
+
+        public void addDep(Task task) {
+            depends.add(task);
+        }
+
+        private final Future future = new Future(this);
+        private final Supplier<R> supplier;
+        private final List<Task> depends = new ArrayList<>();
+    }
 
     private class Worker extends Thread {
         @Override
         public void run() {
+            Task task = null;
             try {
-                while (!Thread.interrupted()) {
-                    Runnable task;
+                while (!Thread.currentThread().isInterrupted()) {
                     synchronized (tasks) {
                         while (tasks.isEmpty()) {
                             tasks.wait();
                         }
 
-                        task = tasks.poll().getFirst();
+                        task = tasks.poll();
                         tasks.notifyAll();
                     }
 
                     task.run();
+                    synchronized (task.getLightFuture()) {
+                        task.getLightFuture().notifyAll();
+                    }
                 }
             } catch (InterruptedException ignored) {
+                if (task != null) {
+                    synchronized (task.getLightFuture()) {
+                        ((Task.Future) task.getLightFuture()).setException(new LightExecutionException(ignored));
+                        task.getLightFuture().notifyAll();
+                    }
+                }
             }
         }
     }

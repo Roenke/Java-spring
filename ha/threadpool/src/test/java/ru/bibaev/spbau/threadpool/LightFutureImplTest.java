@@ -41,5 +41,5 @@ public class LightFutureImplTest {
         verify(threadPool).add(any());
     }
 
-    private ThreadPool threadPool = mock(ThreadPool.class);
+    private final ThreadPool threadPool = mock(ThreadPool.class);
 }

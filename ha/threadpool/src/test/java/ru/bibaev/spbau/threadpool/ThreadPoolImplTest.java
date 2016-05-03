@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -15,10 +14,17 @@ public class ThreadPoolImplTest {
     public void shutdown() throws InterruptedException {
         ThreadPool pool = new ThreadPoolImpl(3);
         int taskCount = 10000;
-        AtomicInteger callCounter = new AtomicInteger(0);
         Collection<LightFuture> futures = new ArrayList<>(taskCount);
         for (int i = 0; i < taskCount; ++i) {
-            LightFuture future = pool.add(callCounter::incrementAndGet);
+            LightFuture future = pool.add(() -> {
+                try {
+                    TimeUnit.DAYS.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                return 1;
+            });
             futures.add(future);
         }
 
@@ -53,7 +59,33 @@ public class ThreadPoolImplTest {
     }
 
     @Test
-    public void thenApplyWaitOldTask() throws InterruptedException {
+    public void thenApplyAfterParentTaskComplete() throws InterruptedException {
+        ThreadPool pool = new ThreadPoolImpl(2);
+        LightFuture<Integer> future = pool.add(() -> 10);
+
+        assertEquals(10, future.get().intValue());
+        LightFuture<Integer> applyingFuture = future.thenApply(x -> x + 2);
+        assertEquals(12, applyingFuture.get().intValue());
+    }
+
+    @Test(expected = LightExecutionException.class)
+    public void thenApplyParentTaskCompleteFail() throws InterruptedException {
+        ThreadPool pool = new ThreadPoolImpl(2);
+        Integer a = 0;
+        LightFuture<Integer> future = pool.add(() -> 100500 / a);
+
+        LightFuture<Integer> newFuture = future.thenApply(x -> x + 2);
+        try {
+            newFuture.get();
+        }
+        catch (LightExecutionException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Test
+    public void thenApplyBeforeParentTaskComplete() throws InterruptedException {
         ThreadPool pool = new ThreadPoolImpl(1);
         LightFuture<Integer> future = pool.add(() -> {
             try {
