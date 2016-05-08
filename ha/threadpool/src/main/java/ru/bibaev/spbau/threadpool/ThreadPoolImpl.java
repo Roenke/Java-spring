@@ -1,6 +1,7 @@
 package ru.bibaev.spbau.threadpool;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -33,7 +34,7 @@ public class ThreadPoolImpl implements ThreadPool {
 
     @Override
     public <R> LightFuture<R> add(Supplier<R> supplier) {
-        Task<R> task = new Task<>(supplier, tasks);
+        Task<R> task = new Task<>(supplier);
         addTask(task);
         return task.getLightFuture();
     }
@@ -48,9 +49,8 @@ public class ThreadPoolImpl implements ThreadPool {
     private final Queue<Task> tasks = new LinkedList<>();
     private final Collection<Thread> executors = new ArrayList<>();
 
-    private static class Task<R> implements Runnable {
-        public Task(Supplier<R> s, Queue<Task> queue) {
-            taskQueue = queue;
+    private class Task<R> implements Runnable {
+        public Task(Supplier<R> s) {
             supplier = s;
         }
 
@@ -59,7 +59,7 @@ public class ThreadPoolImpl implements ThreadPool {
         }
 
         public <T> LightFuture<T> addDependency(Function<R, T> function) {
-            Task<T> task = new Task<>(() -> function.apply(future.result), taskQueue);
+            Task<T> task = new Task<>(() -> function.apply(future.result));
             synchronized (depends) {
                 if (future.result != null) {
                     addTask(task);
@@ -75,44 +75,27 @@ public class ThreadPoolImpl implements ThreadPool {
 
         @Override
         public void run() {
+            Consumer<Task> action;
             try {
                 R res = supplier.get();
                 future.setResult(res);
-
-                synchronized (taskQueue) {
-                    synchronized (depends) {
-                        taskQueue.addAll(depends);
-                        depends.clear();
-                        depends.notifyAll();
-                    }
-                    taskQueue.notifyAll();
-                }
+                action = ThreadPoolImpl.this::addTask;
             } catch (Exception e) {
                 LightExecutionException exception = new LightExecutionException(e);
                 future.setException(exception);
-
-                synchronized (depends) {
-                    for (Task t : depends) {
-                        t.future.setException(new LightExecutionException(exception));
-                    }
-
-                    depends.clear();
-                    depends.notifyAll();
-                }
+                action = (task) -> task.future.setException(new LightExecutionException(e));
             }
-        }
 
-        private <T> void addTask(Task<T> task) {
-            synchronized (taskQueue) {
-                taskQueue.add(task);
-                taskQueue.notifyAll();
+            synchronized (depends) {
+                depends.forEach(action);
+                depends.clear();
+                depends.notifyAll();
             }
         }
 
         private final Future<R> future = new Future<>(this);
         private final Supplier<R> supplier;
         private final List<Task> depends = new ArrayList<>();
-        private final Queue<Task> taskQueue;
     }
 
     private static class Future<R> implements LightFuture<R> {
@@ -161,7 +144,7 @@ public class ThreadPoolImpl implements ThreadPool {
     private class Worker extends Thread {
         @Override
         public void run() {
-            Task task = null;
+            Runnable task;
             try {
                 while (!Thread.currentThread().isInterrupted()) {
                     synchronized (tasks) {
@@ -176,12 +159,6 @@ public class ThreadPoolImpl implements ThreadPool {
                     task.run();
                 }
             } catch (InterruptedException ignored) {
-                if (task != null) {
-                    synchronized (task.getLightFuture()) {
-                        ((Future) task.getLightFuture()).setException(new LightExecutionException(ignored));
-                        task.getLightFuture().notifyAll();
-                    }
-                }
             }
         }
     }

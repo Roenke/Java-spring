@@ -72,7 +72,7 @@ public class ThreadPoolImplTest {
     public void thenApplyParentTaskCompleteFail() throws InterruptedException {
         int count = 0;
         ThreadPool pool = new ThreadPoolImpl(2);
-        for(int i = 0; i < 10000; i++){
+        for(int i = 0; i < 1000; i++){
             Integer a = 0;
             LightFuture<Integer> future = pool.add(() -> 100500 / a);
 
@@ -85,7 +85,7 @@ public class ThreadPoolImplTest {
             }
         }
 
-        assertEquals(count, 10000);
+        assertEquals(count, 1000);
     }
 
     @Test
