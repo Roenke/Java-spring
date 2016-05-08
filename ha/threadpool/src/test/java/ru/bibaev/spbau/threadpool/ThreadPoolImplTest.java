@@ -68,20 +68,24 @@ public class ThreadPoolImplTest {
         assertEquals(12, applyingFuture.get().intValue());
     }
 
-    @Test(expected = LightExecutionException.class)
+    @Test
     public void thenApplyParentTaskCompleteFail() throws InterruptedException {
+        int count = 0;
         ThreadPool pool = new ThreadPoolImpl(2);
-        Integer a = 0;
-        LightFuture<Integer> future = pool.add(() -> 100500 / a);
+        for(int i = 0; i < 10000; i++){
+            Integer a = 0;
+            LightFuture<Integer> future = pool.add(() -> 100500 / a);
 
-        LightFuture<Integer> newFuture = future.thenApply(x -> x + 2);
-        try {
-            newFuture.get();
+            LightFuture<Integer> newFuture = future.thenApply(x -> x + 2);
+            try{
+                newFuture.get();
+            }
+            catch (LightExecutionException e) {
+                count++;
+            }
         }
-        catch (LightExecutionException e) {
-            e.printStackTrace();
-            throw e;
-        }
+
+        assertEquals(count, 10000);
     }
 
     @Test

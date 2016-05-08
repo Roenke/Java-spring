@@ -3,26 +3,23 @@ package ru.bibaev.spbau.threadpool;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @SuppressWarnings("WeakerAccess")
 public class ThreadPoolImpl implements ThreadPool {
     public ThreadPoolImpl(int count) {
-        for (int i = 0; i < count; i++) {
-            Thread worker = new Worker();
-            worker.start();
-            executors.add(worker);
-        }
+        Stream.iterate(0, x -> x + 1)
+                .limit(count)
+                .map(x -> new Worker())
+                .peek(Thread::start)
+                .forEach(executors::add);
     }
 
     @Override
     public void shutdown() throws InterruptedException {
         synchronized (tasks) {
             for (Task task : tasks) {
-                synchronized (task.getLightFuture()) {
-                    ((Task.Future) task.getLightFuture())
-                            .setException(new LightExecutionException("Thread pool is over."));
-                    task.getLightFuture().notifyAll();
-                }
+                task.future.setException(new LightExecutionException("Thread pool is over."));
             }
 
             tasks.clear();
@@ -36,123 +33,129 @@ public class ThreadPoolImpl implements ThreadPool {
 
     @Override
     public <R> LightFuture<R> add(Supplier<R> supplier) {
-        Task<R> task = new Task<>(supplier);
+        Task<R> task = new Task<>(supplier, tasks);
+        addTask(task);
+        return task.getLightFuture();
+    }
+
+    private <R> void addTask(Task<R> task) {
         synchronized (tasks) {
             tasks.add(task);
             tasks.notifyAll();
         }
-        return task.getLightFuture();
     }
 
     private final Queue<Task> tasks = new LinkedList<>();
     private final Collection<Thread> executors = new ArrayList<>();
 
-    private class Task<R> implements Runnable {
-        private class Future implements LightFuture<R> {
-            public Future(Task parentTask) {
-                task = parentTask;
-            }
-
-            public void setResult(R res) {
-                result = res;
-            }
-
-            public void setException(LightExecutionException ex) {
-                exception = ex;
-            }
-
-            @Override
-            public boolean isReady() {
-                return result != null || exception != null;
-            }
-
-            @Override
-            public synchronized R get() throws LightExecutionException {
-                if (exception != null) {
-                    throw exception;
-                }
-
-                try {
-                    while (!isReady()) {
-                        wait();
-                    }
-                } catch (InterruptedException ignored) {
-                }
-
-                return result;
-            }
-
-            @Override
-            public synchronized <T> LightFuture<T> thenApply(Function<R, T> function) {
-                Supplier<T> newSupplier = () -> function.apply(result);
-                Task<T> newTask = new Task<>(newSupplier);
-                if (!isReady()) {
-                    task.addDep(newTask);
-                } else {
-                    if (exception == null) {
-                        synchronized (tasks) {
-                            tasks.add(newTask);
-                            tasks.notifyAll();
-                        }
-                    } else {
-                        newTask.fail();
-                    }
-                }
-
-
-                return newTask.getLightFuture();
-            }
-
-            private LightExecutionException exception;
-            private R result;
-            private final Task task;
-        }
-
-        public Task(Supplier<R> sup) {
-            supplier = sup;
+    private static class Task<R> implements Runnable {
+        public Task(Supplier<R> s, Queue<Task> queue) {
+            taskQueue = queue;
+            supplier = s;
         }
 
         public LightFuture<R> getLightFuture() {
             return future;
         }
 
-        public void fail() {
-            synchronized (future) {
-                future.setException(new LightExecutionException("Source future not completed."));
-                future.notifyAll();
+        public <T> LightFuture<T> addDependency(Function<R, T> function) {
+            Task<T> task = new Task<>(() -> function.apply(future.result), taskQueue);
+            synchronized (depends) {
+                if (future.result != null) {
+                    addTask(task);
+                } else if (future.exception != null) {
+                    task.future.setException(new LightExecutionException(future.exception));
+                } else {
+                    depends.add(task);
+                }
             }
+
+            return task.getLightFuture();
         }
 
         @Override
         public void run() {
             try {
                 R res = supplier.get();
-                synchronized (future) {
-                    future.setResult(res);
-                    future.notifyAll();
-                }
+                future.setResult(res);
 
-                synchronized (tasks) {
-                    tasks.addAll(depends);
-                    tasks.notifyAll();
+                synchronized (taskQueue) {
+                    synchronized (depends) {
+                        taskQueue.addAll(depends);
+                        depends.clear();
+                        depends.notifyAll();
+                    }
+                    taskQueue.notifyAll();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                synchronized (future) {
-                    future.setException(new LightExecutionException(e));
-                    future.notifyAll();
+                LightExecutionException exception = new LightExecutionException(e);
+                future.setException(exception);
+
+                synchronized (depends) {
+                    for (Task t : depends) {
+                        t.future.setException(new LightExecutionException(exception));
+                    }
+
+                    depends.clear();
+                    depends.notifyAll();
                 }
-                depends.forEach(Task::fail);
             }
         }
 
-        public void addDep(Task task) {
-            depends.add(task);
+        private <T> void addTask(Task<T> task) {
+            synchronized (taskQueue) {
+                taskQueue.add(task);
+                taskQueue.notifyAll();
+            }
         }
 
-        private final Future future = new Future(this);
+        private final Future<R> future = new Future<>(this);
         private final Supplier<R> supplier;
         private final List<Task> depends = new ArrayList<>();
+        private final Queue<Task> taskQueue;
+    }
+
+    private static class Future<R> implements LightFuture<R> {
+        public Future(Task<R> parentTask) {
+            task = parentTask;
+        }
+
+        public synchronized void setResult(R res) {
+            result = res;
+            notifyAll();
+        }
+
+        public synchronized void setException(LightExecutionException ex) {
+            exception = ex;
+            notifyAll();
+        }
+
+        @Override
+        public synchronized boolean isReady() {
+            return result != null || exception != null;
+        }
+
+        @Override
+        public synchronized R get() throws LightExecutionException, InterruptedException {
+            while (!isReady()) {
+                wait();
+            }
+
+            if (exception != null) {
+                throw exception;
+            }
+
+            return result;
+        }
+
+        @Override
+        public synchronized <T> LightFuture<T> thenApply(Function<R, T> function) {
+            return task.addDependency(function);
+        }
+
+        private volatile LightExecutionException exception;
+        private volatile R result;
+        private final Task<R> task;
     }
 
     private class Worker extends Thread {
@@ -171,18 +174,17 @@ public class ThreadPoolImpl implements ThreadPool {
                     }
 
                     task.run();
-                    synchronized (task.getLightFuture()) {
-                        task.getLightFuture().notifyAll();
-                    }
                 }
             } catch (InterruptedException ignored) {
                 if (task != null) {
                     synchronized (task.getLightFuture()) {
-                        ((Task.Future) task.getLightFuture()).setException(new LightExecutionException(ignored));
+                        ((Future) task.getLightFuture()).setException(new LightExecutionException(ignored));
                         task.getLightFuture().notifyAll();
                     }
                 }
             }
         }
     }
+
+
 }
