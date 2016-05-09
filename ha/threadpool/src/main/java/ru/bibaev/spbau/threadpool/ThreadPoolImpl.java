@@ -61,12 +61,14 @@ public class ThreadPoolImpl implements ThreadPool {
         public <T> LightFuture<T> addDependency(Function<R, T> function) {
             Task<T> task = new Task<>(() -> function.apply(future.result));
             synchronized (depends) {
-                if (future.result != null) {
-                    addTask(task);
-                } else if (future.exception != null) {
-                    task.future.setException(new LightExecutionException(future.exception));
-                } else {
-                    depends.add(task);
+                synchronized (future) {
+                    if (future.result != null) {
+                        addTask(task);
+                    } else if (future.exception != null) {
+                        task.future.setException(new LightExecutionException(future.exception));
+                    } else {
+                        depends.add(task);
+                    }
                 }
             }
 
@@ -132,7 +134,7 @@ public class ThreadPoolImpl implements ThreadPool {
         }
 
         @Override
-        public synchronized <T> LightFuture<T> thenApply(Function<R, T> function) {
+        public <T> LightFuture<T> thenApply(Function<R, T> function) {
             return task.addDependency(function);
         }
 
@@ -146,7 +148,7 @@ public class ThreadPoolImpl implements ThreadPool {
         public void run() {
             Runnable task;
             try {
-                while (!Thread.currentThread().isInterrupted()) {
+                while (!Thread.interrupted()) {
                     synchronized (tasks) {
                         while (tasks.isEmpty()) {
                             tasks.wait();
@@ -162,6 +164,4 @@ public class ThreadPoolImpl implements ThreadPool {
             }
         }
     }
-
-
 }
