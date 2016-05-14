@@ -40,6 +40,9 @@ public class SmartList<E> extends AbstractList<E> {
     }
 
     public E get(int index) {
+        if (index < 0 || index >= size) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
         if (size == 1) {
             return (E) data;
         }
@@ -110,7 +113,7 @@ public class SmartList<E> extends AbstractList<E> {
     @Override
     public E remove(int index) {
         Object res;
-        if (index >= size) {
+        if (index < 0 || index >= size) {
             throw new ArrayIndexOutOfBoundsException();
         }
 
@@ -137,6 +140,12 @@ public class SmartList<E> extends AbstractList<E> {
         size--;
 
         return (E) res;
+    }
+
+    @Override
+    public void clear() {
+        data = null;
+        size = 0;
     }
 
     public int size() {
