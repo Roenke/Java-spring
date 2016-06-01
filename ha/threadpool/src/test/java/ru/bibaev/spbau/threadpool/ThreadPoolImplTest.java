@@ -152,4 +152,23 @@ public class ThreadPoolImplTest {
             assertEquals(1, futures.get(i).get().intValue());
         }
     }
+
+    @Test(timeout = 1000)
+    public void dependsNoStopThread() throws LightExecutionException, InterruptedException {
+        ThreadPool pool = new ThreadPoolImpl(10);
+        LightFuture<Integer> farFuture = pool.add(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException ignored) {
+            }
+            return 1;
+        });
+
+        for (int i = 0; i < 40; i++) {
+            farFuture.thenApply(x -> x * x);
+        }
+
+        LightFuture<Integer> nearFuture = pool.add(() -> 5);
+        assertEquals(5, nearFuture.get().intValue());
+    }
 }

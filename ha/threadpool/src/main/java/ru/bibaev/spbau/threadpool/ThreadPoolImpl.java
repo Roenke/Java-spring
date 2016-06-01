@@ -43,9 +43,6 @@ public class ThreadPoolImpl implements ThreadPool {
         }
     }
 
-    private final Queue<Task> tasks = new LinkedList<>();
-    private final Collection<Thread> executors = new ArrayList<>();
-
     private class Task<R> implements Runnable {
         public Task(Supplier<R> s) {
             supplier = s;
@@ -66,9 +63,7 @@ public class ThreadPoolImpl implements ThreadPool {
                     } else {
                         depends.add(task);
                     }
-                    future.notify();
                 }
-                depends.notify();
             }
 
             return task.getLightFuture();
@@ -90,13 +85,34 @@ public class ThreadPoolImpl implements ThreadPool {
             synchronized (depends) {
                 depends.forEach(action);
                 depends.clear();
-                depends.notify();
             }
         }
 
         private final Future<R> future = new Future<>(this);
         private final Supplier<R> supplier;
         private final List<Task> depends = new ArrayList<>();
+    }
+
+    private class Worker extends Thread {
+        @Override
+        public void run() {
+            Runnable task;
+            try {
+                while (!Thread.interrupted()) {
+                    synchronized (tasks) {
+                        while (tasks.isEmpty()) {
+                            tasks.wait();
+                        }
+
+                        task = tasks.poll();
+                        tasks.notify();
+                    }
+
+                    task.run();
+                }
+            } catch (InterruptedException ignored) {
+            }
+        }
     }
 
     private static class Future<R> implements LightFuture<R> {
@@ -146,25 +162,6 @@ public class ThreadPoolImpl implements ThreadPool {
         private final Task<R> task;
     }
 
-    private class Worker extends Thread {
-        @Override
-        public void run() {
-            Runnable task;
-            try {
-                while (!Thread.interrupted()) {
-                    synchronized (tasks) {
-                        while (tasks.isEmpty()) {
-                            tasks.wait();
-                        }
-
-                        task = tasks.poll();
-                        tasks.notify();
-                    }
-
-                    task.run();
-                }
-            } catch (InterruptedException ignored) {
-            }
-        }
-    }
+    private final Queue<Task> tasks = new LinkedList<>();
+    private final Collection<Thread> executors = new ArrayList<>();
 }
