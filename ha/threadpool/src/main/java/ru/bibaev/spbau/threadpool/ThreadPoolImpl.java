@@ -26,10 +26,7 @@ public class ThreadPoolImpl implements ThreadPool {
             tasks.clear();
         }
 
-        for (Thread worker : executors) {
-            worker.interrupt();
-            worker.join();
-        }
+        executors.forEach(Thread::interrupt);
     }
 
     @Override
@@ -58,7 +55,7 @@ public class ThreadPoolImpl implements ThreadPool {
             return future;
         }
 
-        public <T> LightFuture<T> addDependency(Function<R, T> function) {
+        public <T> LightFuture<T> addDependency(Function<? super R, T> function) {
             Task<T> task = new Task<>(() -> function.apply(future.result));
             synchronized (depends) {
                 synchronized (future) {
@@ -69,7 +66,9 @@ public class ThreadPoolImpl implements ThreadPool {
                     } else {
                         depends.add(task);
                     }
+                    future.notify();
                 }
+                depends.notify();
             }
 
             return task.getLightFuture();
@@ -91,7 +90,7 @@ public class ThreadPoolImpl implements ThreadPool {
             synchronized (depends) {
                 depends.forEach(action);
                 depends.clear();
-                depends.notifyAll();
+                depends.notify();
             }
         }
 
@@ -103,26 +102,29 @@ public class ThreadPoolImpl implements ThreadPool {
     private static class Future<R> implements LightFuture<R> {
         public Future(Task<R> parentTask) {
             task = parentTask;
+            isCompleted = false;
         }
 
         public synchronized void setResult(R res) {
             result = res;
+            isCompleted = true;
             notifyAll();
         }
 
         public synchronized void setException(LightExecutionException ex) {
             exception = ex;
+            isCompleted = true;
             notifyAll();
         }
 
         @Override
         public synchronized boolean isReady() {
-            return result != null || exception != null;
+            return isCompleted;
         }
 
         @Override
         public synchronized R get() throws LightExecutionException, InterruptedException {
-            while (!isReady()) {
+            while (!isCompleted) {
                 wait();
             }
 
@@ -134,12 +136,13 @@ public class ThreadPoolImpl implements ThreadPool {
         }
 
         @Override
-        public <T> LightFuture<T> thenApply(Function<R, T> function) {
+        public <T> LightFuture<T> thenApply(Function<? super R, T> function) {
             return task.addDependency(function);
         }
 
         private volatile LightExecutionException exception;
         private volatile R result;
+        private boolean isCompleted;
         private final Task<R> task;
     }
 
@@ -155,7 +158,7 @@ public class ThreadPoolImpl implements ThreadPool {
                         }
 
                         task = tasks.poll();
-                        tasks.notifyAll();
+                        tasks.notify();
                     }
 
                     task.run();

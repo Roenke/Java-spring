@@ -1,7 +1,7 @@
 package ru.bibaev.spbau.threadpool;
 
 @SuppressWarnings("WeakerAccess")
-public class LightExecutionException extends RuntimeException {
+public class LightExecutionException extends Exception {
     public LightExecutionException(Exception e) {
         super(e);
     }

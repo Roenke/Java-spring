@@ -8,5 +8,5 @@ public interface LightFuture<R> {
 
     R get() throws LightExecutionException, InterruptedException;
 
-    <T> LightFuture<T> thenApply(Function<R, T> function);
+    <T> LightFuture<T> thenApply(Function<? super R, T> function);
 }

@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 public class ThreadPoolImplTest {
     @Test(expected = LightExecutionException.class)
-    public void shutdown() throws InterruptedException {
+    public void shutdown() throws InterruptedException, LightExecutionException {
         ThreadPool pool = new ThreadPoolImpl(3);
         int taskCount = 10000;
         Collection<LightFuture> futures = new ArrayList<>(taskCount);
@@ -30,11 +30,6 @@ public class ThreadPoolImplTest {
 
         pool.shutdown();
 
-        // Check that all future receive some result
-        for (LightFuture future : futures) {
-            assertTrue(future.isReady());
-        }
-
         // Check that not all tasks fully completed
         for (LightFuture future : futures) {
             future.get();
@@ -42,7 +37,7 @@ public class ThreadPoolImplTest {
     }
 
     @Test
-    public void addOneTask() throws InterruptedException {
+    public void addOneTask() throws InterruptedException, LightExecutionException {
         ThreadPool pool = new ThreadPoolImpl(3);
         LightFuture future = pool.add(() -> true);
 
@@ -50,7 +45,7 @@ public class ThreadPoolImplTest {
     }
 
     @Test
-    public void simpleThenApply() throws InterruptedException {
+    public void simpleThenApply() throws InterruptedException, LightExecutionException {
         ThreadPool pool = new ThreadPoolImpl(1);
         LightFuture<Integer> future = pool.add(() -> 100);
 
@@ -59,7 +54,7 @@ public class ThreadPoolImplTest {
     }
 
     @Test
-    public void thenApplyAfterParentTaskComplete() throws InterruptedException {
+    public void thenApplyAfterParentTaskComplete() throws InterruptedException, LightExecutionException {
         ThreadPool pool = new ThreadPoolImpl(2);
         LightFuture<Integer> future = pool.add(() -> 10);
 
@@ -88,7 +83,7 @@ public class ThreadPoolImplTest {
     }
 
     @Test
-    public void thenApplyBeforeParentTaskComplete() throws InterruptedException {
+    public void thenApplyBeforeParentTaskComplete() throws InterruptedException, LightExecutionException {
         ThreadPool pool = new ThreadPoolImpl(1);
         LightFuture<Integer> future = pool.add(() -> {
             try {
@@ -103,7 +98,7 @@ public class ThreadPoolImplTest {
     }
 
     @Test
-    public void isReadyTest() throws InterruptedException {
+    public void isReadyTest() throws InterruptedException, LightExecutionException {
         ThreadPool pool = new ThreadPoolImpl(4);
         LightFuture<Integer> future = pool.add(() -> {
             try {
@@ -116,6 +111,7 @@ public class ThreadPoolImplTest {
 
         assertFalse(future.isReady());
         assertEquals(3, future.get().intValue());
+        assertTrue(future.isReady());
     }
 
     @Test
@@ -137,7 +133,7 @@ public class ThreadPoolImplTest {
     }
 
     @Test(timeout = 399)
-    public void threadCountGreater() throws InterruptedException {
+    public void threadCountGreater() throws InterruptedException, LightExecutionException {
         ThreadPool pool = new ThreadPoolImpl(10);
         List<LightFuture<Integer>> futures = new ArrayList<>(15);
         for (int i = 0; i < 15; i++) {
